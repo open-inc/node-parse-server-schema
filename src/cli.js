@@ -21,27 +21,28 @@ async function main() {
     .command("down <schemaPath>")
     .description("Fetch the schema from Parse Server")
     .action(async (schemaPath) => {
-      const config = await loadConfig(program);
+      const cfg = await loadConfig(program);
 
-      await down(program, config, schemaPath);
+      await down({ program, cfg, schemaPath });
     });
 
   program
     .command("up <schemaPath>")
     .description("Upload the local schema to Parse Server")
     .action(async (schemaPath) => {
-      const config = await loadConfig(program);
+      const cfg = await loadConfig(program);
 
-      await up(program, config, schemaPath);
+      await up({ program, cfg, schemaPath });
     });
 
   program
     .command("typescript [typescriptPath]")
     .description("Transform the local schema to Typescript definitions")
-    .action(async (typescriptPath) => {
-      const config = await loadConfig(program);
+    .option("--prefix [prefix]", "Prefix will be stripped from class names", "")
+    .action(async (typescriptPath, options) => {
+      const cfg = await loadConfig(program);
 
-      await typescript(program, config, typescriptPath);
+      await typescript({ program, options, cfg, typescriptPath });
     });
 
   await program.parseAsync(process.argv);
@@ -90,7 +91,7 @@ async function loadConfig(program) {
   return config;
 }
 
-async function up(program, cfg, schemaPath) {
+async function up({ program, cfg, schemaPath }) {
   const localSchemaPath = schemaPath
     ? path.resolve(schemaPath)
     : path.resolve(".", "schema", "classes");
@@ -203,7 +204,7 @@ async function up(program, cfg, schemaPath) {
   }
 }
 
-async function down(program, cfg, schemaPath) {
+async function down({ program, cfg, schemaPath }) {
   const schema = await getRemoteSchema(cfg);
 
   const localSchemaPath = schemaPath
@@ -226,8 +227,16 @@ async function down(program, cfg, schemaPath) {
   }
 }
 
-async function typescript(program, cfg, typescriptPath) {
+async function typescript({ options, cfg, typescriptPath }) {
   const schema = await getRemoteSchema(cfg);
+
+  const p = (className) => {
+    if (options.prefix && className.startsWith(options.prefix)) {
+      return className.replace("RideSharing", "");
+    }
+
+    return className;
+  };
 
   const tsPath = typescriptPath
     ? path.resolve(typescriptPath)
@@ -279,16 +288,14 @@ async function typescript(program, cfg, typescriptPath) {
 
         case "Pointer":
           dependencies.push(fieldAttributes.targetClass);
-          attributes.push(`${field}: ${fieldAttributes.targetClass};`);
-
+          attributes.push(`${field}: ${p(fieldAttributes.targetClass)};`);
           break;
 
         case "Relation":
           dependencies.push(fieldAttributes.targetClass);
           attributes.push(
-            `${field}: Parse.Relation<${fieldAttributes.targetClass}>;`
+            `${field}: Parse.Relation<${p(fieldAttributes.targetClass)}>;`
           );
-
           break;
 
         default:
@@ -304,11 +311,11 @@ async function typescript(program, cfg, typescriptPath) {
       .filter((v) => v !== className)
       .filter((v, i, a) => a.indexOf(v) === i)
       .forEach((dep) => {
-        file += `import { ${dep} } from "./${dep}";\n`;
+        file += `import { ${p(dep)} } from "./${dep}";\n`;
       });
 
     file += dependencies.length > 0 ? "\n" : "";
-    file += `export interface ${className}Attributes {\n`;
+    file += `export interface ${p(className)}Attributes {\n`;
 
     attributes.forEach((attr) => {
       file += `  ${attr}\n`;
@@ -324,14 +331,17 @@ async function typescript(program, cfg, typescriptPath) {
     } else if (className === "_Role") {
       file += `export type ${className} = Parse.Role<${className}Attributes>;\n`;
     } else {
-      file += `export class ${className} extends Parse.Object<${className}Attributes> {\n`;
-      file += `  constructor(data: ${className}Attributes) {\n`;
-      file += `    super("${className}", data);\n`;
+      file += `export class ${p(className)} extends Parse.Object<${p(
+        className
+      )}Attributes> {\n`;
+      file += `  constructor(data: ${p(className)}Attributes) {\n`;
+      file += `    super("${p(className)}", data);\n`;
       file += `  }\n`;
       file += `}\n`;
       file += "\n";
-      file += `Parse.Object.registerSubclass("${className}", ${className});\n`;
-      file += "\n";
+      file += `Parse.Object.registerSubclass("${className}", ${p(
+        className
+      )});\n`;
     }
 
     fs.writeFileSync(path.resolve(tsPath, className + ".ts"), file);
