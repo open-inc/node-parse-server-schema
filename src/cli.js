@@ -249,52 +249,54 @@ async function typescript({ options, cfg, typescriptPath }) {
     const attributes = [];
 
     for (const [field, fieldAttributes] of Object.entries(fields)) {
+      const r = fieldAttributes.required ? "" : "?";
+
       switch (fieldAttributes.type) {
         case "String":
-          attributes.push(`${field}: string;`);
+          attributes.push(`${field}${r}: string;`);
           break;
 
         case "Number":
-          attributes.push(`${field}: number;`);
+          attributes.push(`${field}${r}: number;`);
           break;
 
         case "Boolean":
-          attributes.push(`${field}: boolean;`);
+          attributes.push(`${field}${r}: boolean;`);
           break;
 
         case "Object":
-          attributes.push(`${field}: any;`);
+          attributes.push(`${field}${r}: any;`);
           break;
 
         case "Date":
-          attributes.push(`${field}: Date;`);
+          attributes.push(`${field}${r}: Date;`);
           break;
 
         case "GeoPoint":
-          attributes.push(`${field}: Parse.GeoPoint;`);
+          attributes.push(`${field}${r}: Parse.GeoPoint;`);
           break;
 
         case "Polygon":
-          attributes.push(`${field}: Parse.Polygon;`);
+          attributes.push(`${field}${r}: Parse.Polygon;`);
           break;
 
         case "File":
-          attributes.push(`${field}: Parse.File;`);
+          attributes.push(`${field}${r}: Parse.File;`);
           break;
 
         case "Array":
-          attributes.push(`${field}: any[];`);
+          attributes.push(`${field}${r}: any[];`);
           break;
 
         case "Pointer":
           dependencies.push(fieldAttributes.targetClass);
-          attributes.push(`${field}: ${p(fieldAttributes.targetClass)};`);
+          attributes.push(`${field}${r}: ${p(fieldAttributes.targetClass)};`);
           break;
 
         case "Relation":
           dependencies.push(fieldAttributes.targetClass);
           attributes.push(
-            `${field}: Parse.Relation<${p(fieldAttributes.targetClass)}>;`
+            `${field}${r}: Parse.Relation<${p(fieldAttributes.targetClass)}>;`
           );
           break;
 
