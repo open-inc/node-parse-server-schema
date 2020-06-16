@@ -353,7 +353,7 @@ async function typescript({ options, cfg, typescriptPath }) {
     path.resolve(tsPath, "index.ts"),
     schema
       .map((field) => field.className)
-      .map((className) => `export { ${className} } from "./${className}";`)
+      .map((className) => `export { ${p(className)} } from "./${className}";`)
       .join("\n") + "\n"
   );
 }
