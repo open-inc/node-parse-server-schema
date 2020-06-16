@@ -210,13 +210,19 @@ async function down(program, cfg, schemaPath) {
     ? path.resolve(schemaPath)
     : path.resolve(".", "schema", "classes");
 
-  await mkdirp(localSchemaPath);
+  if (localSchemaPath.endsWith(".json")) {
+    await mkdirp(path.dirname(localSchemaPath));
 
-  for (const { className, fields, classLevelPermissions } of schema) {
-    fs.writeFileSync(
-      path.resolve(localSchemaPath, className + ".json"),
-      JSON.stringify({ fields, classLevelPermissions }, null, 2)
-    );
+    fs.writeFileSync(localSchemaPath, JSON.stringify(schema, null, 2));
+  } else {
+    await mkdirp(localSchemaPath);
+
+    for (const { className, fields, classLevelPermissions } of schema) {
+      fs.writeFileSync(
+        path.resolve(localSchemaPath, className + ".json"),
+        JSON.stringify({ fields, classLevelPermissions }, null, 2)
+      );
+    }
   }
 }
 

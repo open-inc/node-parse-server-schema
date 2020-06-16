@@ -44,14 +44,18 @@ async function getLocalSchema(schemaPath) {
     throw new Error(`No local schema at '${schemaPath}'`);
   }
 
-  return fs
-    .readdirSync(schemaPath)
-    .filter((p) => p.endsWith(".json"))
-    .map((p) => ({
-      className: p.replace(".json", ""),
-      ...JSON.parse(fs.readFileSync(path.resolve(schemaPath, p))),
-    }))
-    .map(pickSchema);
+  if (schemaPath.endsWith(".json")) {
+    return JSON.parse(fs.readFileSync(schemaPath)).map(pickSchema);
+  } else {
+    return fs
+      .readdirSync(schemaPath)
+      .filter((p) => p.endsWith(".json"))
+      .map((p) => ({
+        className: p.replace(".json", ""),
+        ...JSON.parse(fs.readFileSync(path.resolve(schemaPath, p))),
+      }))
+      .map(pickSchema);
+  }
 }
 
 async function getRemoteSchema({ publicServerURL, appId, masterKey }) {
