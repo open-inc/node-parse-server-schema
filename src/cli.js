@@ -337,7 +337,7 @@ async function typescript({ options, cfg, typescriptPath }) {
         className
       )}Attributes> {\n`;
       file += `  constructor(data: ${p(className)}Attributes) {\n`;
-      file += `    super("${p(className)}", data);\n`;
+      file += `    super("${className}", data);\n`;
       file += `  }\n`;
       file += `}\n`;
       file += "\n";
