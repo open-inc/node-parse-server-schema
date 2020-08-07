@@ -165,7 +165,7 @@ async function up({ program, cfg, schemaPath }) {
             fieldsToDelete.map((field) => [field, { __op: "Delete" }])
           ),
           classLevelPermissions: Object.fromEntries(
-            clpToDelete.map((clp) => [clp, { __op: "Delete" }])
+            clpToDelete.map((clp) => [clp, {}])
           ),
         });
       }
