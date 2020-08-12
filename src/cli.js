@@ -164,9 +164,7 @@ async function up({ program, cfg, schemaPath }) {
           fields: Object.fromEntries(
             fieldsToDelete.map((field) => [field, { __op: "Delete" }])
           ),
-          classLevelPermissions: Object.fromEntries(
-            clpToDelete.map((clp) => [clp, {}])
-          ),
+          classLevelPermissions: local.classLevelPermissions,
         });
       }
 
@@ -177,9 +175,7 @@ async function up({ program, cfg, schemaPath }) {
           fields: Object.fromEntries(
             fieldsToCreate.map((field) => [field, local.fields[field]])
           ),
-          classLevelPermissions: Object.fromEntries(
-            clpToCreate.map((clp) => [clp, local.classLevelPermissions[clp]])
-          ),
+          classLevelPermissions: local.classLevelPermissions,
         });
       }
     }
