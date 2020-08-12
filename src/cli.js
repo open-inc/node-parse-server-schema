@@ -109,8 +109,11 @@ async function up({ program, cfg, schemaPath }) {
 
       const fieldsToCreate = [];
       const fieldsToDelete = [];
-      const clpToCreate = [];
-      const clpToDelete = [];
+
+      const clpChanged = !equals(
+        local.classLevelPermissions,
+        remote.classLevelPermissions
+      );
 
       // search for fields that are diffrent
       for (const field of Object.keys(local.fields)) {
@@ -133,32 +136,8 @@ async function up({ program, cfg, schemaPath }) {
         }
       }
 
-      // search for clp that are different
-      for (const clp of Object.keys(local.classLevelPermissions)) {
-        if (
-          remote.classLevelPermissions[clp] &&
-          !equals(
-            local.classLevelPermissions[clp],
-            remote.classLevelPermissions[clp]
-          )
-        ) {
-          clpToDelete.push(clp);
-          clpToCreate.push(clp);
-        }
-
-        if (!remote.classLevelPermissions[clp]) {
-          clpToCreate.push(clp);
-        }
-      }
-
-      for (const clp of Object.keys(remote.classLevelPermissions)) {
-        if (!local.classLevelPermissions[clp]) {
-          clpToDelete.push(clp);
-        }
-      }
-
       // delete schema request
-      if (fieldsToDelete.length > 0 || clpToDelete.length > 0) {
+      if (fieldsToDelete.length > 0 || clpChanged) {
         await updateSchema(cfg, {
           className: local.className,
           fields: Object.fromEntries(
@@ -169,7 +148,7 @@ async function up({ program, cfg, schemaPath }) {
       }
 
       // create schema request
-      if (fieldsToCreate.length > 0 || clpToCreate.length > 0) {
+      if (fieldsToCreate.length > 0 || clpChanged) {
         await updateSchema(cfg, {
           className: local.className,
           fields: Object.fromEntries(
