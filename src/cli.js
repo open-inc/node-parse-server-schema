@@ -207,7 +207,7 @@ async function typescript({ options, cfg, typescriptPath }) {
 
   const p = (className) => {
     if (options.prefix && className.startsWith(options.prefix)) {
-      return className.replace("RideSharing", "");
+      return className.replace(options.prefix, "");
     }
 
     return className;
