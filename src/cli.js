@@ -39,6 +39,7 @@ async function main() {
     .command("typescript [typescriptPath]")
     .description("Transform the local schema to Typescript definitions")
     .option("--prefix [prefix]", "Prefix will be stripped from class names", "")
+    .option("--no-sdk", "Don't use Parse JS SDK, just TS without dependencies")
     .action(async (typescriptPath, options) => {
       const cfg = await loadConfig(program);
 
@@ -205,6 +206,8 @@ async function down({ program, cfg, schemaPath }) {
 async function typescript({ options, cfg, typescriptPath }) {
   const schema = await getRemoteSchema(cfg);
 
+  const sdk = options.sdk;
+
   const p = (className) => {
     if (options.prefix && className.startsWith(options.prefix)) {
       return className.replace(options.prefix, "");
@@ -222,6 +225,12 @@ async function typescript({ options, cfg, typescriptPath }) {
   for (const { className, fields } of schema) {
     const dependencies = [];
     const attributes = [];
+
+    if (!sdk) {
+      attributes.push("objectId: string;");
+      attributes.push("createdAt: Date;");
+      attributes.push("updatedAt: Date;");
+    }
 
     for (const [field, fieldAttributes] of Object.entries(fields)) {
       const r = fieldAttributes.required ? "" : "?";
@@ -265,7 +274,17 @@ async function typescript({ options, cfg, typescriptPath }) {
 
         case "Pointer":
           dependencies.push(fieldAttributes.targetClass);
-          attributes.push(`${field}${r}: ${p(fieldAttributes.targetClass)};`);
+
+          if (sdk) {
+            attributes.push(`${field}${r}: ${p(fieldAttributes.targetClass)};`);
+          } else {
+            // attributes.push(
+            //   `${field}${r}: ${p(fieldAttributes.targetClass)}Attributes;`
+            // );
+            attributes.push(
+              `${field}${r}: { __type: "Pointer", className: "${fieldAttributes.targetClass}", objectId: string};`
+            );
+          }
           break;
 
         case "Relation":
@@ -282,16 +301,24 @@ async function typescript({ options, cfg, typescriptPath }) {
       }
     }
 
-    let file = `import Parse from "parse";\n\n`;
+    let file = "";
 
-    dependencies
-      .filter((v) => v !== className)
-      .filter((v, i, a) => a.indexOf(v) === i)
-      .forEach((dep) => {
-        file += `import { ${p(dep)} } from "./${dep}";\n`;
-      });
+    if (sdk) {
+      file += `import Parse from "parse";\n\n`;
+    }
 
-    file += dependencies.length > 0 ? "\n" : "";
+    if (sdk) {
+      dependencies
+        .filter((v) => v !== className)
+        .filter((v, i, a) => a.indexOf(v) === i)
+        .forEach((dep) => {
+          file += `import { ${p(dep)}${
+            sdk ? "" : "Attributes"
+          } } from "./${dep}";\n`;
+        });
+
+      file += dependencies.length > 0 ? "\n" : "";
+    }
     file += `export interface ${p(className)}Attributes {\n`;
 
     attributes.forEach((attr) => {
@@ -299,38 +326,54 @@ async function typescript({ options, cfg, typescriptPath }) {
     });
 
     file += "}\n";
-    file += "\n";
 
-    if (className === "_Session") {
-      file += `export type ${className} = Parse.Session<${className}Attributes>;\n`;
-    } else if (className === "_User") {
-      file += `export type ${className} = Parse.User<${className}Attributes>;\n`;
-    } else if (className === "_Role") {
-      file += `export type ${className} = Parse.Role<${className}Attributes>;\n`;
-    } else {
-      file += `export class ${p(className)} extends Parse.Object<${p(
-        className
-      )}Attributes> {\n`;
-      file += `  constructor(data: ${p(className)}Attributes) {\n`;
-      file += `    super("${className}", data);\n`;
-      file += `  }\n`;
-      file += `}\n`;
+    if (sdk) {
       file += "\n";
-      file += `Parse.Object.registerSubclass("${className}", ${p(
-        className
-      )});\n`;
+
+      if (className === "_Session") {
+        file += `export type ${className} = Parse.Session<${className}Attributes>;\n`;
+      } else if (className === "_User") {
+        file += `export type ${className} = Parse.User<${className}Attributes>;\n`;
+      } else if (className === "_Role") {
+        file += `export type ${className} = Parse.Role<${className}Attributes>;\n`;
+      } else {
+        file += `export class ${p(className)} extends Parse.Object<${p(
+          className
+        )}Attributes> {\n`;
+        file += `  constructor(data: ${p(className)}Attributes) {\n`;
+        file += `    super("${className}", data);\n`;
+        file += `  }\n`;
+        file += `}\n`;
+        file += "\n";
+        file += `Parse.Object.registerSubclass("${className}", ${p(
+          className
+        )});\n`;
+      }
     }
 
     fs.writeFileSync(path.resolve(tsPath, className + ".ts"), file);
   }
 
-  fs.writeFileSync(
-    path.resolve(tsPath, "index.ts"),
-    schema
-      .map((field) => field.className)
-      .map((className) => `export { ${p(className)} } from "./${className}";`)
-      .join("\n") + "\n"
-  );
+  if (sdk) {
+    fs.writeFileSync(
+      path.resolve(tsPath, "index.ts"),
+      schema
+        .map((field) => field.className)
+        .map((className) => `export { ${p(className)} } from "./${className}";`)
+        .join("\n") + "\n"
+    );
+  } else {
+    fs.writeFileSync(
+      path.resolve(tsPath, "index.ts"),
+      schema
+        .map((field) => field.className)
+        .map(
+          (className) =>
+            `export { ${p(className)}Attributes } from "./${className}";`
+        )
+        .join("\n") + "\n"
+    );
+  }
 }
 
 main().catch((error) => console.error("Error: " + error.message));
