@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 const fs = require("fs");
 const path = require("path");
 const mkdirp = require("mkdirp");
@@ -50,6 +52,26 @@ async function main() {
 }
 
 async function loadConfig(program) {
+  const {
+    PARSE_SERVER_APPLICATION_ID,
+    PARSE_SERVER_MASTER_KEY,
+    PARSE_PUBLIC_SERVER_URL,
+  } = process.env;
+
+  if (
+    PARSE_SERVER_APPLICATION_ID &&
+    PARSE_SERVER_MASTER_KEY &&
+    PARSE_PUBLIC_SERVER_URL
+  ) {
+    console.log("Using config from process.env");
+
+    return {
+      publicServerURL: PARSE_PUBLIC_SERVER_URL,
+      appId: PARSE_SERVER_APPLICATION_ID,
+      masterKey: PARSE_SERVER_MASTER_KEY,
+    };
+  }
+
   const configPath = path.resolve(
     program.configPath || "config/parse-server.config.json"
   );
