@@ -1,7 +1,7 @@
 const nodeFetch = require("node-fetch");
 const fs = require("fs");
 
-const { deepEqual } = require("assert");
+const { deepStrictEqual } = require("assert");
 
 module.exports = {
   copy,
@@ -11,7 +11,7 @@ module.exports = {
 
 function equals(x, y) {
   try {
-    deepEqual(x, y);
+    deepStrictEqual(x, y);
     return true;
   } catch (e) {
     return false;
