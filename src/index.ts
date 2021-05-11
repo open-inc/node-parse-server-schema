@@ -13,7 +13,9 @@ import {
 import { equals } from "./helper";
 import { ConfigInterface } from "./types";
 
-export async function loadConfig(configPath: string): Promise<ConfigInterface> {
+export async function loadConfig(
+  configPath?: string
+): Promise<ConfigInterface> {
   const {
     PARSE_SERVER_APPLICATION_ID,
     PARSE_SERVER_MASTER_KEY,
@@ -74,13 +76,38 @@ export async function loadConfig(configPath: string): Promise<ConfigInterface> {
   return config;
 }
 
-export async function up(cfg: ConfigInterface, schemaPath: string) {
+export async function up(
+  cfg: ConfigInterface,
+  schemaPath: string,
+  options: {
+    prefix?: string;
+  } = {}
+) {
   const localSchemaPath = schemaPath
     ? path.resolve(schemaPath)
     : path.resolve(".", "schema", "classes");
 
-  const localSchema = await getLocalSchema(localSchemaPath);
-  const remoteSchema = await getRemoteSchema(cfg);
+  let localSchema = await getLocalSchema(localSchemaPath);
+  let remoteSchema = await getRemoteSchema(cfg);
+
+  const prefix = options.prefix;
+
+  if (prefix) {
+    for (const s of localSchema) {
+      s.className = prefix + s.className;
+
+      for (const field of Object.values(s.fields)) {
+        if (
+          "targetClass" in field &&
+          field.targetClass?.startsWith("{{PREFIX}}")
+        ) {
+          field.targetClass = field.targetClass.replace("{{PREFIX}}", prefix);
+        }
+      }
+    }
+
+    remoteSchema = remoteSchema.filter((s) => s.className.startsWith(prefix));
+  }
 
   // update + create
   for (const local of localSchema) {
@@ -163,8 +190,68 @@ export async function up(cfg: ConfigInterface, schemaPath: string) {
   }
 }
 
-export async function down(cfg: ConfigInterface, schemaPath: string) {
-  const schema = await getRemoteSchema(cfg);
+export async function del(
+  cfg: ConfigInterface,
+  schemaPath: string,
+  options: {
+    prefix?: string;
+  } = {}
+) {
+  const localSchemaPath = schemaPath
+    ? path.resolve(schemaPath)
+    : path.resolve(".", "schema", "classes");
+
+  let localSchema = await getLocalSchema(localSchemaPath);
+  let remoteSchema = await getRemoteSchema(cfg);
+
+  const prefix = options.prefix;
+
+  if (prefix) {
+    for (const s of localSchema) {
+      s.className = prefix + s.className;
+    }
+
+    remoteSchema = remoteSchema.filter((s) => s.className.startsWith(prefix));
+  }
+
+  // delete
+  for (const local of localSchema) {
+    const remote = remoteSchema.find((s) => s.className === local.className);
+
+    if (remote) {
+      console.log("delete", local.className);
+      await deleteSchema(cfg, local);
+    }
+  }
+}
+
+export async function down(
+  cfg: ConfigInterface,
+  schemaPath: string,
+  options: {
+    prefix?: string;
+  } = {}
+) {
+  let schema = await getRemoteSchema(cfg);
+
+  const prefix = options.prefix;
+
+  if (prefix) {
+    schema = schema.filter((s) => s.className.startsWith(prefix));
+
+    for (const s of schema) {
+      s.className = s.className.replace(prefix, "");
+
+      for (const field of Object.values(s.fields)) {
+        if (
+          (field.type === "Pointer" || field.type === "Relation") &&
+          field.targetClass?.startsWith(prefix)
+        ) {
+          field.targetClass = field.targetClass.replace(prefix, "{{PREFIX}}");
+        }
+      }
+    }
+  }
 
   const localSchemaPath = schemaPath
     ? path.resolve(schemaPath)
@@ -190,17 +277,36 @@ export async function typescript(
   cfg: ConfigInterface,
   typescriptPath: string,
   options: {
-    prefix: string;
-    sdk: string;
+    prefix?: string;
+    sdk?: boolean;
+    globalSdk?: boolean;
+    class?: boolean;
   }
 ) {
-  const schema = await getRemoteSchema(cfg);
+  let schema = await getRemoteSchema(cfg);
 
-  const sdk = options.sdk;
+  const prefix = (options.prefix ||= "");
+
+  options.sdk ??= true;
+  options.globalSdk ??= false;
+  options.class ??= false;
+
+  if (prefix) {
+    schema = schema
+      .filter(
+        (s) => s.className.startsWith(prefix) || s.className.startsWith("_")
+      )
+      .map((s) => ({
+        ...s,
+        className: s.className.startsWith(prefix)
+          ? s.className.replace(prefix, "")
+          : s.className,
+      }));
+  }
 
   const p = (className: string) => {
-    if (options.prefix && className.startsWith(options.prefix)) {
-      return className.replace(options.prefix, "");
+    if (prefix && className.startsWith(prefix)) {
+      return className.replace(prefix, "");
     }
 
     return className;
@@ -216,7 +322,7 @@ export async function typescript(
     const dependencies = [];
     const attributes = [];
 
-    if (!sdk) {
+    if (!options.sdk) {
       attributes.push("objectId: string;");
       attributes.push("createdAt: Date;");
       attributes.push("updatedAt: Date;");
@@ -263,25 +369,32 @@ export async function typescript(
           break;
 
         case "Pointer":
-          dependencies.push(fieldAttributes.targetClass);
+          const pointerTarget = p(fieldAttributes.targetClass);
 
-          if (sdk) {
-            attributes.push(`${field}${r}: ${p(fieldAttributes.targetClass)};`);
+          if (pointerTarget !== className) {
+            dependencies.push(pointerTarget);
+          }
+
+          if (options.sdk) {
+            attributes.push(`${field}${r}: ${pointerTarget};`);
           } else {
             // attributes.push(
-            //   `${field}${r}: ${p(fieldAttributes.targetClass)}Attributes;`
+            //   `${field}${r}: ${pointerTarget}Attributes;`
             // );
             attributes.push(
-              `${field}${r}: { __type: "Pointer", className: "${fieldAttributes.targetClass}", objectId: string};`
+              `${field}${r}: { __type: "Pointer", className: "${pointerTarget}", objectId: string};`
             );
           }
           break;
 
         case "Relation":
-          dependencies.push(fieldAttributes.targetClass);
-          attributes.push(
-            `${field}${r}: Parse.Relation<${p(fieldAttributes.targetClass)}>;`
-          );
+          const relationTarget = p(fieldAttributes.targetClass);
+
+          if (relationTarget !== className) {
+            dependencies.push(relationTarget);
+          }
+
+          attributes.push(`${field}${r}: Parse.Relation<${relationTarget}>;`);
           break;
 
         default:
@@ -294,17 +407,17 @@ export async function typescript(
 
     let file = "";
 
-    if (sdk) {
+    if (options.sdk && !options.globalSdk) {
       file += `import Parse from "parse";\n\n`;
     }
 
-    if (sdk) {
+    if (options.sdk) {
       dependencies
         .filter((v) => v !== className)
         .filter((v, i, a) => a.indexOf(v) === i)
         .forEach((dep) => {
           file += `import { ${p(dep)}${
-            sdk ? "" : "Attributes"
+            options.sdk ? "" : "Attributes"
           } } from "./${dep}";\n`;
         });
 
@@ -318,7 +431,7 @@ export async function typescript(
 
     file += "}\n";
 
-    if (sdk) {
+    if (options.sdk && options.class) {
       file += "\n";
 
       if (className === "_Session") {
@@ -342,15 +455,34 @@ export async function typescript(
       }
     }
 
+    if (options.sdk && !options.class) {
+      file += "\n";
+
+      if (className === "_Session") {
+        file += `export type ${className} = Parse.Session<${className}Attributes>;\n`;
+      } else if (className === "_User") {
+        file += `export type ${className} = Parse.User<${className}Attributes>;\n`;
+      } else if (className === "_Role") {
+        file += `export type ${className} = Parse.Role<${className}Attributes>;\n`;
+      } else {
+        file += `export type ${className} = Parse.Object<${className}Attributes>;\n`;
+      }
+    }
+
     fs.writeFileSync(path.resolve(tsPath, className + ".ts"), file);
   }
 
-  if (sdk) {
+  if (options.sdk) {
     fs.writeFileSync(
       path.resolve(tsPath, "index.ts"),
       schema
         .map((field) => field.className)
-        .map((className) => `export { ${p(className)} } from "./${className}";`)
+        .map(
+          (className) =>
+            `export { ${p(className)}, ${p(
+              className
+            )}Attributes } from "./${className}";`
+        )
         .join("\n") + "\n"
     );
   } else {
