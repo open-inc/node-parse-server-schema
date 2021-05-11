@@ -7,6 +7,10 @@
     "schema"
   ],
   "license": "MIT",
+  "main": "dist/index.js",
+  "files": [
+    "dist"
+  ],
   "bin": {
     "parse-server-schema": "bin/parse-server-schema.js"
   },
