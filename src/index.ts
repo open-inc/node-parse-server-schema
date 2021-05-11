@@ -1,57 +1,19 @@
-require("dotenv").config();
+import fs from "fs";
+import path from "path";
+import mkdirp from "mkdirp";
 
-const fs = require("fs");
-const path = require("path");
-const mkdirp = require("mkdirp");
-
-const { program } = require("commander");
-
-const {
+import {
   getLocalSchema,
   getRemoteSchema,
   createSchema,
   updateSchema,
   deleteSchema,
-} = require("./schema");
+} from "./schema";
 
-const { equals } = require("./helper");
+import { equals } from "./helper";
+import { ConfigInterface } from "./types";
 
-async function main() {
-  program.option("--configPath <path>", "Path to .js(on) config file");
-
-  program
-    .command("down <schemaPath>")
-    .description("Fetch the schema from Parse Server")
-    .action(async (schemaPath) => {
-      const cfg = await loadConfig(program);
-
-      await down({ program, cfg, schemaPath });
-    });
-
-  program
-    .command("up <schemaPath>")
-    .description("Upload the local schema to Parse Server")
-    .action(async (schemaPath) => {
-      const cfg = await loadConfig(program);
-
-      await up({ program, cfg, schemaPath });
-    });
-
-  program
-    .command("typescript [typescriptPath]")
-    .description("Transform the local schema to Typescript definitions")
-    .option("--prefix [prefix]", "Prefix will be stripped from class names", "")
-    .option("--no-sdk", "Don't use Parse JS SDK, just TS without dependencies")
-    .action(async (typescriptPath, options) => {
-      const cfg = await loadConfig(program);
-
-      await typescript({ program, options, cfg, typescriptPath });
-    });
-
-  await program.parseAsync(process.argv);
-}
-
-async function loadConfig(program) {
+export async function loadConfig(configPath: string): Promise<ConfigInterface> {
   const {
     PARSE_SERVER_APPLICATION_ID,
     PARSE_SERVER_MASTER_KEY,
@@ -72,9 +34,7 @@ async function loadConfig(program) {
     };
   }
 
-  const configPath = path.resolve(
-    program.configPath || "config/parse-server.config.json"
-  );
+  configPath = path.resolve(configPath || "config/parse-server.config.json");
 
   if (!fs.existsSync(configPath)) {
     console.error(`No config at '${configPath}'`);
@@ -88,7 +48,7 @@ async function loadConfig(program) {
   }
 
   if (configPath.endsWith(".json")) {
-    config = JSON.parse(fs.readFileSync(configPath));
+    config = JSON.parse(fs.readFileSync(configPath, "utf-8"));
   }
 
   if (!config) {
@@ -114,7 +74,7 @@ async function loadConfig(program) {
   return config;
 }
 
-async function up({ program, cfg, schemaPath }) {
+export async function up(cfg: ConfigInterface, schemaPath: string) {
   const localSchemaPath = schemaPath
     ? path.resolve(schemaPath)
     : path.resolve(".", "schema", "classes");
@@ -163,6 +123,7 @@ async function up({ program, cfg, schemaPath }) {
       if (fieldsToDelete.length > 0 || clpChanged) {
         await updateSchema(cfg, {
           className: local.className,
+          // @ts-ignore
           fields: Object.fromEntries(
             fieldsToDelete.map((field) => [field, { __op: "Delete" }])
           ),
@@ -202,7 +163,7 @@ async function up({ program, cfg, schemaPath }) {
   }
 }
 
-async function down({ program, cfg, schemaPath }) {
+export async function down(cfg: ConfigInterface, schemaPath: string) {
   const schema = await getRemoteSchema(cfg);
 
   const localSchemaPath = schemaPath
@@ -225,12 +186,19 @@ async function down({ program, cfg, schemaPath }) {
   }
 }
 
-async function typescript({ options, cfg, typescriptPath }) {
+export async function typescript(
+  cfg: ConfigInterface,
+  typescriptPath: string,
+  options: {
+    prefix: string;
+    sdk: string;
+  }
+) {
   const schema = await getRemoteSchema(cfg);
 
   const sdk = options.sdk;
 
-  const p = (className) => {
+  const p = (className: string) => {
     if (options.prefix && className.startsWith(options.prefix)) {
       return className.replace(options.prefix, "");
     }
@@ -318,6 +286,7 @@ async function typescript({ options, cfg, typescriptPath }) {
 
         default:
           throw new Error(
+            // @ts-ignore
             `Parse type '${fieldAttributes.type}' not implemented for typescript conversation.`
           );
       }
@@ -397,5 +366,3 @@ async function typescript({ options, cfg, typescriptPath }) {
     );
   }
 }
-
-main().catch((error) => console.error("Error: " + error.message));

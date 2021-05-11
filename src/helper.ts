@@ -1,15 +1,8 @@
-const nodeFetch = require("node-fetch");
-const fs = require("fs");
+import nodeFetch, { Response } from "node-fetch";
 
-const { deepStrictEqual } = require("assert");
+import { deepStrictEqual } from "assert";
 
-module.exports = {
-  copy,
-  equals,
-  fetch,
-};
-
-function equals(x, y) {
+export function equals(x: any, y: any) {
   try {
     deepStrictEqual(x, y);
     return true;
@@ -18,15 +11,21 @@ function equals(x, y) {
   }
 }
 
-function copy(x) {
+export function copy(x: any) {
   return JSON.parse(JSON.stringify(x));
 }
 
-async function fetch({ url, ...otpions }) {
+export async function fetch({
+  url,
+  ...otpions
+}: {
+  url: string;
+  [x: string]: any;
+}) {
   return await nodeFetch(url, otpions).then(parseRequest);
 }
 
-async function parseRequest(res) {
+async function parseRequest(res: Response) {
   if (res.status < 400) {
     return res.json();
   } else {

@@ -15,5 +15,10 @@
     "dotenv": "^8.2.0",
     "mkdirp": "^1.0.4",
     "node-fetch": "^2.6.0"
+  },
+  "devDependencies": {
+    "@types/mkdirp": "^1.0.1",
+    "@types/node": "^15.0.2",
+    "@types/node-fetch": "^2.5.10"
   }
 }

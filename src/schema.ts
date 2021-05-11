@@ -1,20 +1,12 @@
-const fs = require("fs");
-const path = require("path");
+import fs from "fs";
+import path from "path";
 
-const { fetch, copy } = require("./helper");
-
-module.exports = {
-  pickSchema,
-  getLocalSchema,
-  getRemoteSchema,
-  createSchema,
-  updateSchema,
-  deleteSchema,
-};
+import { fetch, copy } from "./helper";
+import { ConfigInterface, SchemaInterface } from "./types";
 
 const cwd = process.cwd();
 
-function pickSchema(schema) {
+export function pickSchema(schema: SchemaInterface): SchemaInterface {
   if (!schema) {
     throw new Error("Schema not found.");
   }
@@ -39,26 +31,32 @@ function pickSchema(schema) {
   };
 }
 
-async function getLocalSchema(schemaPath) {
+export async function getLocalSchema(
+  schemaPath: string
+): Promise<SchemaInterface[]> {
   if (!fs.existsSync(schemaPath)) {
     throw new Error(`No local schema at '${schemaPath}'`);
   }
 
   if (schemaPath.endsWith(".json")) {
-    return JSON.parse(fs.readFileSync(schemaPath)).map(pickSchema);
+    return JSON.parse(fs.readFileSync(schemaPath, "utf-8")).map(pickSchema);
   } else {
     return fs
       .readdirSync(schemaPath)
       .filter((p) => p.endsWith(".json"))
       .map((p) => ({
         className: p.replace(".json", ""),
-        ...JSON.parse(fs.readFileSync(path.resolve(schemaPath, p))),
+        ...JSON.parse(fs.readFileSync(path.resolve(schemaPath, p), "utf-8")),
       }))
       .map(pickSchema);
   }
 }
 
-async function getRemoteSchema({ publicServerURL, appId, masterKey }) {
+export async function getRemoteSchema({
+  publicServerURL,
+  appId,
+  masterKey,
+}: ConfigInterface): Promise<SchemaInterface[]> {
   return await fetch({
     url: publicServerURL + "/schemas",
     headers: {
@@ -70,7 +68,10 @@ async function getRemoteSchema({ publicServerURL, appId, masterKey }) {
     .then((res) => res.map(pickSchema));
 }
 
-async function createSchema({ publicServerURL, appId, masterKey }, schema) {
+export async function createSchema(
+  { publicServerURL, appId, masterKey }: ConfigInterface,
+  schema: SchemaInterface
+) {
   return await fetch({
     url: publicServerURL + "/schemas",
     method: "POST",
@@ -83,7 +84,10 @@ async function createSchema({ publicServerURL, appId, masterKey }, schema) {
   });
 }
 
-async function updateSchema({ publicServerURL, appId, masterKey }, schema) {
+export async function updateSchema(
+  { publicServerURL, appId, masterKey }: ConfigInterface,
+  schema: SchemaInterface
+) {
   return await fetch({
     url: publicServerURL + "/schemas/" + schema.className,
     method: "PUT",
@@ -96,9 +100,9 @@ async function updateSchema({ publicServerURL, appId, masterKey }, schema) {
   });
 }
 
-async function deleteSchema(
-  { publicServerURL, appId, masterKey },
-  { className }
+export async function deleteSchema(
+  { publicServerURL, appId, masterKey }: ConfigInterface,
+  { className }: { className: string }
 ) {
   return await fetch({
     url: publicServerURL + "/schemas/" + className,
