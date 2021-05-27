@@ -292,16 +292,9 @@ export async function typescript(
   options.class ??= false;
 
   if (prefix) {
-    schema = schema
-      .filter(
-        (s) => s.className.startsWith(prefix) || s.className.startsWith("_")
-      )
-      .map((s) => ({
-        ...s,
-        className: s.className.startsWith(prefix)
-          ? s.className.replace(prefix, "")
-          : s.className,
-      }));
+    schema = schema.filter(
+      (s) => s.className.startsWith(prefix) || s.className.startsWith("_")
+    );
   }
 
   const p = (className: string) => {
@@ -469,7 +462,7 @@ export async function typescript(
       }
     }
 
-    fs.writeFileSync(path.resolve(tsPath, className + ".ts"), file);
+    fs.writeFileSync(path.resolve(tsPath, p(className) + ".ts"), file);
   }
 
   if (options.sdk) {
@@ -479,9 +472,9 @@ export async function typescript(
         .map((field) => field.className)
         .map(
           (className) =>
-            `export { ${p(className)}, ${p(
+            `export { ${p(className)}, ${p(className)}Attributes } from "./${p(
               className
-            )}Attributes } from "./${className}";`
+            )}";`
         )
         .join("\n") + "\n"
     );
@@ -492,7 +485,7 @@ export async function typescript(
         .map((field) => field.className)
         .map(
           (className) =>
-            `export { ${p(className)}Attributes } from "./${className}";`
+            `export { ${p(className)}Attributes } from "./${p(className)}";`
         )
         .join("\n") + "\n"
     );
