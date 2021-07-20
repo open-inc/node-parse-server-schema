@@ -315,11 +315,9 @@ export async function typescript(
     const dependencies = [];
     const attributes = [];
 
-    if (!options.sdk) {
-      attributes.push("objectId: string;");
-      attributes.push("createdAt: Date;");
-      attributes.push("updatedAt: Date;");
-    }
+    attributes.push("objectId: string;");
+    attributes.push("createdAt: Date;");
+    attributes.push("updatedAt: Date;");
 
     for (const [field, fieldAttributes] of Object.entries(fields)) {
       const r = fieldAttributes.required ? "" : "?";
@@ -406,7 +404,7 @@ export async function typescript(
 
     if (options.sdk) {
       dependencies
-        .filter((v) => v !== className)
+        .filter((v) => v !== p(className))
         .filter((v, i, a) => a.indexOf(v) === i)
         .forEach((dep) => {
           file += `import { ${p(dep)}${
@@ -437,8 +435,10 @@ export async function typescript(
         file += `export class ${p(className)} extends Parse.Object<${p(
           className
         )}Attributes> {\n`;
-        file += `  constructor(data: ${p(className)}Attributes) {\n`;
-        file += `    super("${className}", data);\n`;
+        file += `  constructor(data?: Partial<${p(className)}Attributes>) {\n`;
+        file += `    super("${className}", data as ${p(
+          className
+        )}Attributes);\n`;
         file += `  }\n`;
         file += `}\n`;
         file += "\n";
@@ -458,7 +458,9 @@ export async function typescript(
       } else if (className === "_Role") {
         file += `export type ${className} = Parse.Role<${className}Attributes>;\n`;
       } else {
-        file += `export type ${className} = Parse.Object<${className}Attributes>;\n`;
+        file += `export type ${p(className)} = Parse.Object<${p(
+          className
+        )}Attributes>;\n`;
       }
     }
 
