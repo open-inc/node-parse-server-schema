@@ -57,7 +57,7 @@ export async function getRemoteSchema({
   appId,
   masterKey,
 }: ConfigInterface): Promise<SchemaInterface[]> {
-  return await fetch({
+  const schema: SchemaInterface[] = await fetch({
     url: publicServerURL + "/schemas",
     headers: {
       "X-Parse-Application-Id": appId,
@@ -66,6 +66,18 @@ export async function getRemoteSchema({
   })
     .then((res) => res.results || [])
     .then((res) => res.map(pickSchema));
+
+  schema.sort((a, b) => {
+    if (a.className < b.className) {
+      return -1;
+    }
+    if (a.className > b.className) {
+      return 1;
+    }
+    return 0;
+  });
+
+  return schema;
 }
 
 export async function createSchema(
