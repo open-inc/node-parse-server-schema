@@ -27,7 +27,7 @@ export async function loadConfig(
     PARSE_SERVER_MASTER_KEY &&
     PARSE_PUBLIC_SERVER_URL
   ) {
-    console.log("Using config from process.env");
+    console.log("[@openinc/parse-server-schema] Using config from process.env");
 
     return {
       publicServerURL: PARSE_PUBLIC_SERVER_URL,
@@ -39,7 +39,9 @@ export async function loadConfig(
   configPath = path.resolve(configPath || "config/parse-server.config.json");
 
   if (!fs.existsSync(configPath)) {
-    console.error(`No config at '${configPath}'`);
+    console.error(
+      `[@openinc/parse-server-schema] No config at '${configPath}'`
+    );
     process.exit(1);
   }
 
@@ -54,22 +56,28 @@ export async function loadConfig(
   }
 
   if (!config) {
-    console.error(`Invalid config file type`);
+    console.error(`[@openinc/parse-server-schema] Invalid config file type`);
     process.exit(1);
   }
 
   if (!config.publicServerURL) {
-    console.error(`Invalid config: Missing key 'publicServerURL'.`);
+    console.error(
+      `[@openinc/parse-server-schema] Invalid config: Missing key 'publicServerURL'.`
+    );
     process.exit(1);
   }
 
   if (!config.appId) {
-    console.error(`Invalid config: Missing key 'appId'.`);
+    console.error(
+      `[@openinc/parse-server-schema] Invalid config: Missing key 'appId'.`
+    );
     process.exit(1);
   }
 
   if (!config.masterKey) {
-    console.error(`Invalid config: Missing key 'masterKey'.`);
+    console.error(
+      `[@openinc/parse-server-schema] Invalid config: Missing key 'masterKey'.`
+    );
     process.exit(1);
   }
 
@@ -81,6 +89,8 @@ export async function up(
   schemaPath: string,
   options: {
     prefix?: string;
+    deleteClasses?: boolean;
+    deleteFields?: boolean;
   } = {}
 ) {
   const localSchemaPath = schemaPath
@@ -91,6 +101,8 @@ export async function up(
   let remoteSchema = await getRemoteSchema(cfg);
 
   const prefix = options.prefix;
+  const deleteClasses = options.deleteClasses ?? true;
+  const deleteFields = options.deleteFields ?? true;
 
   if (prefix) {
     for (const s of localSchema) {
@@ -115,7 +127,7 @@ export async function up(
 
     // update an existing schema
     if (remote && !equals(local, remote)) {
-      console.log("update", local.className);
+      console.log("[@openinc/parse-server-schema] update", local.className);
 
       const fieldsToCreate = [];
       const fieldsToDelete = [];
@@ -148,14 +160,33 @@ export async function up(
 
       // delete schema request
       if (fieldsToDelete.length > 0 || clpChanged) {
-        await updateSchema(cfg, {
-          className: local.className,
-          // @ts-ignore
-          fields: Object.fromEntries(
-            fieldsToDelete.map((field) => [field, { __op: "Delete" }])
-          ),
-          classLevelPermissions: local.classLevelPermissions,
-        });
+        if (deleteFields) {
+          await updateSchema(cfg, {
+            className: local.className,
+            // @ts-ignore
+            fields: Object.fromEntries(
+              fieldsToDelete.map((field) => [field, { __op: "Delete" }])
+            ),
+            classLevelPermissions: local.classLevelPermissions,
+          });
+        } else {
+          console.warn(
+            "[@openinc/parse-server-schema] Skip deleting fields: " +
+              fieldsToDelete.join(", ")
+          );
+
+          for (const fieldName of fieldsToDelete) {
+            const index = fieldsToCreate.indexOf(fieldName);
+
+            if (index >= 0) {
+              console.warn(
+                `[@openinc/parse-server-schema] Can't update field: ${fieldName}`
+              );
+
+              fieldsToCreate.splice(index, 1);
+            }
+          }
+        }
       }
 
       // create schema request
@@ -172,7 +203,7 @@ export async function up(
 
     // create a missing schema
     if (!remote) {
-      console.log("create", local.className);
+      console.log("[@openinc/parse-server-schema] create", local.className);
 
       createSchema(cfg, local);
     }
@@ -184,8 +215,15 @@ export async function up(
 
     // delete a missing schema
     if (!local && !equals(local, remote)) {
-      console.log("delete", remote.className);
-      await deleteSchema(cfg, remote);
+      if (deleteClasses) {
+        console.log("[@openinc/parse-server-schema] delete", remote.className);
+        await deleteSchema(cfg, remote);
+      } else {
+        console.warn(
+          "[@openinc/parse-server-schema] Skip deleting class: " +
+            remote.className
+        );
+      }
     }
   }
 }
@@ -219,7 +257,7 @@ export async function del(
     const remote = remoteSchema.find((s) => s.className === local.className);
 
     if (remote) {
-      console.log("delete", local.className);
+      console.log("[@openinc/parse-server-schema] delete", local.className);
       await deleteSchema(cfg, local);
     }
   }
