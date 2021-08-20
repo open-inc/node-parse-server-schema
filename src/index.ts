@@ -315,9 +315,16 @@ export async function typescript(
     const dependencies = [];
     const attributes = [];
 
-    attributes.push("objectId: string;");
-    attributes.push("createdAt: Date;");
-    attributes.push("updatedAt: Date;");
+    if (options.sdk) {
+      attributes.push("id: string;");
+      attributes.push("objectId: string;");
+      attributes.push("createdAt: Date;");
+      attributes.push("updatedAt: Date;");
+    } else {
+      attributes.push("objectId: string;");
+      attributes.push("createdAt: string;");
+      attributes.push("updatedAt: string;");
+    }
 
     for (const [field, fieldAttributes] of Object.entries(fields)) {
       const r = fieldAttributes.required ? "" : "?";
@@ -339,24 +346,46 @@ export async function typescript(
           attributes.push(`${field}${r}: any;`);
           break;
 
+        case "Array":
+          attributes.push(`${field}${r}: any[];`);
+          break;
+
         case "Date":
-          attributes.push(`${field}${r}: Date;`);
+          if (options.sdk) {
+            attributes.push(`${field}${r}: Date;`);
+          } else {
+            attributes.push(`${field}${r}: { __type: "Date"; iso: string };`);
+          }
           break;
 
         case "GeoPoint":
-          attributes.push(`${field}${r}: Parse.GeoPoint;`);
+          if (options.sdk) {
+            attributes.push(`${field}${r}: Parse.GeoPoint;`);
+          } else {
+            attributes.push(
+              `${field}${r}: { __type: "GeoPoint"; latitude: number; longitude: number };`
+            );
+          }
           break;
 
         case "Polygon":
-          attributes.push(`${field}${r}: Parse.Polygon;`);
+          if (options.sdk) {
+            attributes.push(`${field}${r}: Parse.Polygon;`);
+          } else {
+            attributes.push(
+              `${field}${r}: { __type: "Polygon"; coordinates: [number, number][] };`
+            );
+          }
           break;
 
         case "File":
-          attributes.push(`${field}${r}: Parse.File;`);
-          break;
-
-        case "Array":
-          attributes.push(`${field}${r}: any[];`);
+          if (options.sdk) {
+            attributes.push(`${field}${r}: Parse.File;`);
+          } else {
+            attributes.push(
+              `${field}${r}: { __type: "File"; name: string; url: string };`
+            );
+          }
           break;
 
         case "Pointer":
@@ -385,7 +414,13 @@ export async function typescript(
             dependencies.push(relationTarget);
           }
 
-          attributes.push(`${field}${r}: Parse.Relation<${relationTarget}>;`);
+          if (options.sdk) {
+            attributes.push(`${field}${r}: Parse.Relation<${relationTarget}>;`);
+          } else {
+            attributes.push(
+              `${field}${r}: { __type: "Pointer", className: "${relationTarget}";`
+            );
+          }
           break;
 
         default:
