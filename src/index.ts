@@ -476,16 +476,44 @@ export async function typescript(
     }
 
     if (options.sdk) {
-      dependencies
+      const uniqueDependencies = dependencies
         .filter((v) => v !== p(className))
         .filter((v, i, a) => a.indexOf(v) === i)
-        .forEach((dep) => {
-          file += `import { ${p(dep)}${
-            options.sdk ? "" : "Attributes"
-          } } from "./${dep}";\n`;
-        });
+        .sort();
 
-      file += dependencies.length > 0 ? "\n" : "";
+      const externalDependencies = uniqueDependencies.filter((v) => {
+        if (v.startsWith("_")) {
+          return false;
+        }
+
+        if (prefix && v.startsWith(prefix)) {
+          return false;
+        }
+
+        return true;
+      });
+
+      const internalDependencies = uniqueDependencies.filter(
+        (v) => !externalDependencies.includes(v)
+      );
+
+      internalDependencies.forEach((dep) => {
+        file += `import { ${p(dep)}${
+          options.sdk ? "" : "Attributes"
+        } } from "./${dep}";\n`;
+      });
+
+      if (internalDependencies.length > 0) {
+        file += "\n";
+      }
+
+      externalDependencies.forEach((dep) => {
+        file += `type ${p(dep)} = Parse.Object;\n`;
+      });
+
+      if (externalDependencies.length > 0) {
+        file += "\n";
+      }
     }
     file += `export interface ${p(className)}Attributes {\n`;
 
