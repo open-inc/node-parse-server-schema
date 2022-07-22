@@ -316,6 +316,7 @@ export async function typescript(
   typescriptPath: string,
   options: {
     prefix?: string;
+    ignore?: string[];
     sdk?: boolean;
     globalSdk?: boolean;
     class?: boolean;
@@ -333,6 +334,18 @@ export async function typescript(
     schema = schema.filter(
       (s) => s.className.startsWith(prefix) || s.className.startsWith("_")
     );
+  }
+
+  if (Array.isArray(options.ignore)) {
+    for (let ignore of options.ignore) {
+      if (ignore.endsWith("*")) {
+        ignore = ignore.slice(0, -1);
+
+        schema = schema.filter((s) => !s.className.startsWith(ignore));
+      } else {
+        schema = schema.filter((s) => s.className !== ignore);
+      }
+    }
   }
 
   const p = (className: string) => {
@@ -364,8 +377,21 @@ export async function typescript(
       attributes.push("updatedAt: string;");
     }
 
-    for (const [field, fieldAttributes] of Object.entries(fields)) {
-      const r = fieldAttributes.required ? "" : "?";
+    attributes.push("");
+
+    const ignoreFields = ["id", "objectId", "createdAt", "updatedAt"];
+
+    const fieldEntries = Object.entries(fields).filter(
+      ([name]) => !ignoreFields.includes(name)
+    );
+
+    fieldEntries.sort(([a], [b]) => a.localeCompare(b));
+
+    for (const [field, fieldAttributes] of fieldEntries) {
+      const r =
+        fieldAttributes.required || "defaultValue" in fieldAttributes
+          ? ""
+          : "?";
 
       switch (fieldAttributes.type) {
         case "String":
@@ -440,7 +466,7 @@ export async function typescript(
             //   `${field}${r}: ${pointerTarget}Attributes;`
             // );
             attributes.push(
-              `${field}${r}: { __type: "Pointer", className: "${pointerTarget}", objectId: string};`
+              `${field}${r}: { __type: "Pointer", className: "${pointerTarget}", objectId: string };`
             );
           }
           break;
@@ -486,7 +512,7 @@ export async function typescript(
           return false;
         }
 
-        if (prefix && v.startsWith(prefix)) {
+        if (prefix && !v.startsWith(prefix)) {
           return false;
         }
 
@@ -518,7 +544,11 @@ export async function typescript(
     file += `export interface ${p(className)}Attributes {\n`;
 
     attributes.forEach((attr) => {
-      file += `  ${attr}\n`;
+      if (attr) {
+        file += `  ${attr}\n`;
+      } else {
+        file += "\n";
+      }
     });
 
     file += "}\n";
@@ -536,6 +566,7 @@ export async function typescript(
         file += `export class ${p(className)} extends Parse.Object<${p(
           className
         )}Attributes> {\n`;
+        file += `  static className: string = "${className}";\n\n`;
         file += `  constructor(data?: Partial<${p(className)}Attributes>) {\n`;
         file += `    super("${className}", data as ${p(
           className
