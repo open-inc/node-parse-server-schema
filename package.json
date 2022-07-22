@@ -15,14 +15,14 @@
     "parse-server-schema": "bin/parse-server-schema.js"
   },
   "dependencies": {
-    "commander": "^5.1.0",
-    "dotenv": "^8.2.0",
-    "mkdirp": "^1.0.4",
-    "node-fetch": "^2.6.0"
+    "commander": "^9.0.0",
+    "dotenv": "^16.0.0",
+    "mkdirp": "^1.0.0",
+    "node-fetch": "^2.0.0"
   },
   "devDependencies": {
-    "@types/mkdirp": "^1.0.1",
-    "@types/node": "^15.0.2",
-    "@types/node-fetch": "^2.5.10"
+    "@types/mkdirp": "^1.0.0",
+    "@types/node": "^16.0.0",
+    "@types/node-fetch": "^2.0.0"
   }
 }
