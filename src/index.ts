@@ -11,7 +11,7 @@ import {
 } from "./schema";
 
 import { equals } from "./helper";
-import { ConfigInterface } from "./types";
+import { ConfigInterface, SchemaInterface } from "./types";
 
 export async function loadConfig(
   configPath?: string
@@ -365,6 +365,7 @@ export async function typescript(
   for (const { className, fields } of schema) {
     const dependencies = [];
     const attributes = [];
+    const getter = [];
 
     if (options.sdk) {
       attributes.push("id: string;");
@@ -388,110 +389,40 @@ export async function typescript(
     fieldEntries.sort(([a], [b]) => a.localeCompare(b));
 
     for (const [field, fieldAttributes] of fieldEntries) {
-      const r =
-        fieldAttributes.required || "defaultValue" in fieldAttributes
-          ? ""
-          : "?";
+      if (
+        "targetClass" in fieldAttributes &&
+        fieldAttributes.targetClass !== className
+      ) {
+        dependencies.push(fieldAttributes.targetClass);
+      }
 
-      switch (fieldAttributes.type) {
-        case "String":
-          attributes.push(`${field}${r}: string;`);
-          break;
+      const type = getTypescriptFieldType(
+        fieldAttributes,
+        options.sdk,
+        p,
+        className
+      );
+      const nullable = getTypescriptFieldNullable(fieldAttributes);
 
-        case "Number":
-          attributes.push(`${field}${r}: number;`);
-          break;
+      const r = nullable ? "" : "?";
+      const u = nullable ? "" : " | undefined";
 
-        case "Boolean":
-          attributes.push(`${field}${r}: boolean;`);
-          break;
+      if (fieldAttributes.type === "Relation") {
+        attributes.push(`${field}: ${type};`);
 
-        case "Object":
-          attributes.push(`${field}${r}: any;`);
-          break;
+        getter.push(`get ${field}(): ${type} {`);
+        getter.push(`  return super.relation("${field}");`);
+        getter.push(`}`);
+      } else {
+        attributes.push(`${field}${r}: ${type};`);
 
-        case "Array":
-          attributes.push(`${field}${r}: any[];`);
-          break;
+        getter.push(`get ${field}(): ${type}${u} {`);
+        getter.push(`  return super.get("${field}");`);
+        getter.push(`}`);
 
-        case "Date":
-          if (options.sdk) {
-            attributes.push(`${field}${r}: Date;`);
-          } else {
-            attributes.push(`${field}${r}: { __type: "Date"; iso: string };`);
-          }
-          break;
-
-        case "GeoPoint":
-          if (options.sdk) {
-            attributes.push(`${field}${r}: Parse.GeoPoint;`);
-          } else {
-            attributes.push(
-              `${field}${r}: { __type: "GeoPoint"; latitude: number; longitude: number };`
-            );
-          }
-          break;
-
-        case "Polygon":
-          if (options.sdk) {
-            attributes.push(`${field}${r}: Parse.Polygon;`);
-          } else {
-            attributes.push(
-              `${field}${r}: { __type: "Polygon"; coordinates: [number, number][] };`
-            );
-          }
-          break;
-
-        case "File":
-          if (options.sdk) {
-            attributes.push(`${field}${r}: Parse.File;`);
-          } else {
-            attributes.push(
-              `${field}${r}: { __type: "File"; name: string; url: string };`
-            );
-          }
-          break;
-
-        case "Pointer":
-          const pointerTarget = p(fieldAttributes.targetClass);
-
-          if (pointerTarget !== className) {
-            dependencies.push(pointerTarget);
-          }
-
-          if (options.sdk) {
-            attributes.push(`${field}${r}: ${pointerTarget};`);
-          } else {
-            // attributes.push(
-            //   `${field}${r}: ${pointerTarget}Attributes;`
-            // );
-            attributes.push(
-              `${field}${r}: { __type: "Pointer", className: "${pointerTarget}", objectId: string };`
-            );
-          }
-          break;
-
-        case "Relation":
-          const relationTarget = p(fieldAttributes.targetClass);
-
-          if (relationTarget !== className) {
-            dependencies.push(relationTarget);
-          }
-
-          if (options.sdk) {
-            attributes.push(`${field}${r}: Parse.Relation<${relationTarget}>;`);
-          } else {
-            attributes.push(
-              `${field}${r}: { __type: "Pointer", className: "${relationTarget}";`
-            );
-          }
-          break;
-
-        default:
-          throw new Error(
-            // @ts-ignore
-            `Parse type '${fieldAttributes.type}' not implemented for typescript conversation.`
-          );
+        getter.push(`set ${field}(value: ${type}${u}) {`);
+        getter.push(`  super.set("${field}", value);`);
+        getter.push(`}`);
       }
     }
 
@@ -512,7 +443,7 @@ export async function typescript(
           return false;
         }
 
-        if (prefix && !v.startsWith(prefix)) {
+        if (prefix && v.startsWith(prefix)) {
           return false;
         }
 
@@ -524,9 +455,9 @@ export async function typescript(
       );
 
       internalDependencies.forEach((dep) => {
-        file += `import { ${p(dep)}${
+        file += `import type { ${p(dep)}${
           options.sdk ? "" : "Attributes"
-        } } from "./${dep}";\n`;
+        } } from "./${p(dep)}";\n`;
       });
 
       if (internalDependencies.length > 0) {
@@ -572,6 +503,17 @@ export async function typescript(
           className
         )}Attributes);\n`;
         file += `  }\n`;
+
+        file += "\n";
+
+        getter.forEach((attr) => {
+          if (attr) {
+            file += `  ${attr}\n`;
+          } else {
+            file += "\n";
+          }
+        });
+
         file += `}\n`;
         file += "\n";
         file += `Parse.Object.registerSubclass("${className}", ${p(
@@ -606,9 +548,11 @@ export async function typescript(
         .map((field) => field.className)
         .map(
           (className) =>
-            `export { ${p(className)}, ${p(className)}Attributes } from "./${p(
+            `export { ${p(className)} } from "./${p(
               className
-            )}";`
+            )}";\nexport type { ${p(className)}Attributes } from "./${p(
+              className
+            )}";\n`
         )
         .join("\n") + "\n"
     );
@@ -623,5 +567,90 @@ export async function typescript(
         )
         .join("\n") + "\n"
     );
+  }
+}
+
+function getTypescriptFieldNullable(
+  fieldAttributes: SchemaInterface["fields"][0]
+) {
+  return fieldAttributes.required || "defaultValue" in fieldAttributes;
+}
+
+function getTypescriptFieldType(
+  fieldAttributes: SchemaInterface["fields"][0],
+  sdk: boolean,
+  p: (className: string) => string,
+  className: string
+) {
+  switch (fieldAttributes.type) {
+    case "String":
+      return "string";
+
+    case "Number":
+      return `number`;
+
+    case "Boolean":
+      return `boolean`;
+
+    case "Object":
+      return `any`;
+
+    case "Array":
+      return `any[]`;
+
+    case "Date":
+      if (sdk) {
+        return `Date`;
+      } else {
+        return `{ __type: "Date"; iso: string }`;
+      }
+
+    case "GeoPoint":
+      if (sdk) {
+        return `Parse.GeoPoint`;
+      } else {
+        return `{ __type: "GeoPoint"; latitude: number; longitude: number };`;
+      }
+
+    case "Polygon":
+      if (sdk) {
+        return `Parse.Polygon`;
+      } else {
+        return `{ __type: "Polygon"; coordinates: [number, number][] };`;
+      }
+
+    case "File":
+      if (sdk) {
+        return `Parse.File`;
+      } else {
+        return `{ __type: "File"; name: string; url: string };`;
+      }
+
+    case "Pointer":
+      const pointerTarget = p(fieldAttributes.targetClass);
+
+      if (sdk) {
+        return `${pointerTarget}`;
+      } else {
+        // return(
+        //   `${pointerTarget}Attributes;`
+        // );
+        return `{ __type: "Pointer", className: "${pointerTarget}", objectId: string };`;
+      }
+
+    case "Relation":
+      const relationTarget = p(fieldAttributes.targetClass);
+
+      if (sdk) {
+        return `Parse.Relation<${p(className)}, ${relationTarget}>`;
+      } else {
+        return `{ __type: "Pointer", className: "${relationTarget}";`;
+      }
+
+    default:
+      throw new Error(
+        // @ts-ignore
+        `Parse type '${fieldAttributes.type}' not implemented for typescript conversation.`
+      );
   }
 }
