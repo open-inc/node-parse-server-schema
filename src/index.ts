@@ -317,7 +317,7 @@ export async function typescript(
   options: {
     prefix?: string;
     ignore?: string[];
-    sdk?: boolean;
+    sdk?: boolean; // "default" | "node" | "global" | "none";
     globalSdk?: boolean;
     class?: boolean;
   }

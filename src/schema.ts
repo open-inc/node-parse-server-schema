@@ -77,6 +77,14 @@ export async function getRemoteSchema({
     return 0;
   });
 
+  for (const s of schema) {
+    const keys = Object.keys(s.fields);
+
+    keys.sort((a, b) => a.localeCompare(b));
+
+    s.fields = Object.fromEntries(keys.map((key) => [key, s.fields[key]]));
+  }
+
   return schema;
 }
 
