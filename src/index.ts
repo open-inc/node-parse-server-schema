@@ -103,7 +103,7 @@ export async function up(
     options.prefix || "",
     options.filter
   );
-  let remoteSchema = await getRemoteSchema(cfg, options.filter);
+  let remoteSchema = await getRemoteSchema(cfg);
 
   const prefix = options.prefix;
   const deleteClasses = options.deleteClasses ?? true;
