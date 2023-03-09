@@ -91,14 +91,15 @@ export async function up(
     prefix?: string;
     deleteClasses?: boolean;
     deleteFields?: boolean;
+    filter?: (className: string) => boolean;
   } = {}
 ) {
   const localSchemaPath = schemaPath
     ? path.resolve(schemaPath)
     : path.resolve(".", "schema", "classes");
 
-  let localSchema = await getLocalSchema(localSchemaPath);
-  let remoteSchema = await getRemoteSchema(cfg);
+  let localSchema = await getLocalSchema(localSchemaPath, options.filter);
+  let remoteSchema = await getRemoteSchema(cfg, options.filter);
 
   const prefix = options.prefix;
   const deleteClasses = options.deleteClasses ?? true;

@@ -32,16 +32,19 @@ export function pickSchema(schema: SchemaInterface): SchemaInterface {
 }
 
 export async function getLocalSchema(
-  schemaPath: string
+  schemaPath: string,
+  filter?: (className: string) => boolean
 ): Promise<SchemaInterface[]> {
   if (!fs.existsSync(schemaPath)) {
     throw new Error(`No local schema at '${schemaPath}'`);
   }
 
+  let schema: SchemaInterface[] = [];
+
   if (schemaPath.endsWith(".json")) {
-    return JSON.parse(fs.readFileSync(schemaPath, "utf-8")).map(pickSchema);
+    schema = JSON.parse(fs.readFileSync(schemaPath, "utf-8")).map(pickSchema);
   } else {
-    return fs
+    schema = fs
       .readdirSync(schemaPath)
       .filter((p) => p.endsWith(".json"))
       .map((p) => ({
@@ -50,14 +53,19 @@ export async function getLocalSchema(
       }))
       .map(pickSchema);
   }
+
+  if (filter) {
+    schema = schema.filter((s) => filter(s.className));
+  }
+
+  return schema;
 }
 
-export async function getRemoteSchema({
-  publicServerURL,
-  appId,
-  masterKey,
-}: ConfigInterface): Promise<SchemaInterface[]> {
-  const schema: SchemaInterface[] = await fetch({
+export async function getRemoteSchema(
+  { publicServerURL, appId, masterKey }: ConfigInterface,
+  filter?: (className: string) => boolean
+): Promise<SchemaInterface[]> {
+  let schema: SchemaInterface[] = await fetch({
     url: publicServerURL + "/schemas",
     headers: {
       "X-Parse-Application-Id": appId,
@@ -66,6 +74,10 @@ export async function getRemoteSchema({
   })
     .then((res) => res.results || [])
     .then((res) => res.map(pickSchema));
+
+  if (filter) {
+    schema = schema.filter((s) => filter(s.className));
+  }
 
   schema.sort((a, b) => {
     if (a.className < b.className) {
