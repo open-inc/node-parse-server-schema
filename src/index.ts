@@ -98,7 +98,11 @@ export async function up(
     ? path.resolve(schemaPath)
     : path.resolve(".", "schema", "classes");
 
-  let localSchema = await getLocalSchema(localSchemaPath, options.filter);
+  let localSchema = await getLocalSchema(
+    localSchemaPath,
+    options.prefix || "",
+    options.filter
+  );
   let remoteSchema = await getRemoteSchema(cfg, options.filter);
 
   const prefix = options.prefix;

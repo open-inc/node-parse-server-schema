@@ -33,6 +33,7 @@ export function pickSchema(schema: SchemaInterface): SchemaInterface {
 
 export async function getLocalSchema(
   schemaPath: string,
+  prefix: string = "",
   filter?: (className: string) => boolean
 ): Promise<SchemaInterface[]> {
   if (!fs.existsSync(schemaPath)) {
@@ -55,7 +56,7 @@ export async function getLocalSchema(
   }
 
   if (filter) {
-    schema = schema.filter((s) => filter(s.className));
+    schema = schema.filter((s) => filter(prefix + s.className));
   }
 
   return schema;
