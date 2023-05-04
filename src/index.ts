@@ -20,17 +20,16 @@ export async function loadConfig(
     PARSE_SERVER_APPLICATION_ID,
     PARSE_SERVER_MASTER_KEY,
     PARSE_PUBLIC_SERVER_URL,
+    PARSE_SERVER_URL,
   } = process.env;
 
-  if (
-    PARSE_SERVER_APPLICATION_ID &&
-    PARSE_SERVER_MASTER_KEY &&
-    PARSE_PUBLIC_SERVER_URL
-  ) {
+  const url = PARSE_SERVER_URL || PARSE_PUBLIC_SERVER_URL;
+
+  if (PARSE_SERVER_APPLICATION_ID && PARSE_SERVER_MASTER_KEY && url) {
     console.log("[@openinc/parse-server-schema] Using config from process.env");
 
     return {
-      publicServerURL: PARSE_PUBLIC_SERVER_URL,
+      publicServerURL: url,
       appId: PARSE_SERVER_APPLICATION_ID,
       masterKey: PARSE_SERVER_MASTER_KEY,
     };
