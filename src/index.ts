@@ -1,13 +1,13 @@
 import fs from "fs";
-import path from "path";
 import mkdirp from "mkdirp";
+import path from "path";
 
 import {
+  createSchema,
+  deleteSchema,
   getLocalSchema,
   getRemoteSchema,
-  createSchema,
   updateSchema,
-  deleteSchema,
 } from "./schema";
 
 import { equals } from "./helper";
@@ -87,6 +87,7 @@ export async function up(
   cfg: ConfigInterface,
   schemaPath: string,
   options: {
+    ignore?: string[];
     prefix?: string;
     deleteClasses?: boolean;
     deleteFields?: boolean;
@@ -103,6 +104,20 @@ export async function up(
     options.filter
   );
   let remoteSchema = await getRemoteSchema(cfg);
+
+  if (Array.isArray(options.ignore)) {
+    for (let ignore of options.ignore) {
+      if (ignore.endsWith("*")) {
+        ignore = ignore.slice(0, -1);
+
+        remoteSchema = remoteSchema.filter(
+          (s) => !s.className.startsWith(ignore)
+        );
+      } else {
+        remoteSchema = remoteSchema.filter((s) => s.className !== ignore);
+      }
+    }
+  }
 
   const prefix = options.prefix;
   const deleteClasses = options.deleteClasses ?? true;
@@ -272,11 +287,24 @@ export async function down(
   schemaPath: string,
   options: {
     prefix?: string;
+    ignore?: string[];
   } = {}
 ) {
   let schema = await getRemoteSchema(cfg);
 
   const prefix = options.prefix;
+
+  if (Array.isArray(options.ignore)) {
+    for (let ignore of options.ignore) {
+      if (ignore.endsWith("*")) {
+        ignore = ignore.slice(0, -1);
+
+        schema = schema.filter((s) => !s.className.startsWith(ignore));
+      } else {
+        schema = schema.filter((s) => s.className !== ignore);
+      }
+    }
+  }
 
   if (prefix) {
     schema = schema.filter((s) => s.className.startsWith(prefix));
@@ -448,6 +476,26 @@ export async function typescript(
         }
 
         if (prefix && v.startsWith(prefix)) {
+          return false;
+        }
+
+        if (Array.isArray(options.ignore)) {
+          for (let ignore of options.ignore) {
+            if (ignore.endsWith("*")) {
+              ignore = ignore.slice(0, -1);
+
+              if (v.startsWith(ignore)) {
+                return true;
+              }
+            } else {
+              if (v === ignore) {
+                return true;
+              }
+            }
+          }
+        }
+
+        if (!prefix) {
           return false;
         }
 
