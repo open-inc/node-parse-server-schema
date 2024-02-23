@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 
-import { fetch, copy } from "./helper";
+import { copy, fetch } from "./helper";
 import { ConfigInterface, SchemaInterface } from "./types";
 
 const cwd = process.cwd();
