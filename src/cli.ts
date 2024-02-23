@@ -1,9 +1,11 @@
 // @ts-check
 require("dotenv").config();
 
-import { Command } from "commander";
+// @ts-ignore
+import pkg from "../package.json";
 
-import { loadConfig, up, down, typescript, del } from "./index";
+import { Command } from "commander";
+import { del, down, loadConfig, typescript, up } from "./index";
 
 main().catch((error) => {
   console.error("Error: " + error.message);
@@ -12,6 +14,8 @@ main().catch((error) => {
 
 async function main() {
   const program = new Command();
+
+  program.version(pkg.version);
 
   program.option("--configPath <path>", "Path to .js(on) config file");
 
@@ -22,6 +26,7 @@ async function main() {
       "Only classes with the given prefix will be pulled",
       ""
     )
+    .option("--ignore <ignore...>", "Class(es) to ignore", "")
     .description("Fetch the schema from Parse Server")
     .action(async (schemaPath, options) => {
       const cfg = await loadConfig(program.opts().configPath);
@@ -36,11 +41,18 @@ async function main() {
       "Only classes with the given prefix will be pushed or removed",
       ""
     )
+    .option("--ignore <ignore...>", "Class(es) to ignore", "")
+    .option("--safe", "This will prevent destructive operations", "")
     .description("Upload the local schema to Parse Server")
     .action(async (schemaPath, options) => {
       const cfg = await loadConfig(program.opts().configPath);
 
-      await up(cfg, schemaPath, options);
+      await up(cfg, schemaPath, {
+        prefix: options.prefix,
+        ignore: options.ignore,
+        deleteClasses: !options.safe,
+        deleteFields: !options.safe,
+      });
     });
 
   program
