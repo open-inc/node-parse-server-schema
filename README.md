@@ -16,6 +16,31 @@ npm i -D @openinc/parse-server-schema
 npx parse-server-schema --help
 ```
 
+### Config file (JSON)
+
+Here's what a valid JSON file looks like:
+```JSON
+{ 
+  "masterKey": "my-parse-master-key",
+  "publicServerURL": "https://my-parse-server.com",
+  "appId": "my-parse-app-id"
+}
+```
+
+### Generate local schemas from distant Parse server
+
+```
+parse-server-schema down ./path/to/local/schemas --configPath ./path/to/my-parse-conf.json
+```
+
+
+### Generate TS types from distant Parse server
+
+```
+parse-server-schema typescript ./path/to/my/local/types --configPath ./path/to/my-parse-conf.json
+```
+
+
 ## Programmatic Usage
 
 ```ts
