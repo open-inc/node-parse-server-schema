@@ -21,12 +21,36 @@ export async function loadConfig(
     PARSE_SERVER_MASTER_KEY,
     PARSE_PUBLIC_SERVER_URL,
     PARSE_SERVER_URL,
+    PARSE_SERVER_FETCH_SCHEMA_SERVER_URL,
+    PARSE_SERVER_FETCH_SCHEMA_APPID,
+    PARSE_SERVER_FETCH_SCHEMA_MASTERKEY,
   } = process.env;
 
-  const url = PARSE_SERVER_URL || PARSE_PUBLIC_SERVER_URL;
+  const url =
+    PARSE_SERVER_FETCH_SCHEMA_SERVER_URL ||
+    PARSE_SERVER_URL ||
+    PARSE_PUBLIC_SERVER_URL;
+
+  if (
+    PARSE_SERVER_FETCH_SCHEMA_APPID &&
+    PARSE_SERVER_FETCH_SCHEMA_MASTERKEY &&
+    url
+  ) {
+    console.log(
+      "[@openinc/parse-server-schema] Using config from process.env with PARSE_SERVER_FETCH_SCHEMA_SERVER_URL"
+    );
+
+    return {
+      publicServerURL: url,
+      appId: PARSE_SERVER_FETCH_SCHEMA_APPID,
+      masterKey: PARSE_SERVER_FETCH_SCHEMA_MASTERKEY,
+    };
+  }
 
   if (PARSE_SERVER_APPLICATION_ID && PARSE_SERVER_MASTER_KEY && url) {
-    console.log("[@openinc/parse-server-schema] Using config from process.env");
+    console.log(
+      "[@openinc/parse-server-schema] Using config from process.env with PARSE_SERVER_URL"
+    );
 
     return {
       publicServerURL: url,
