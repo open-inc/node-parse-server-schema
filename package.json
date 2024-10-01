@@ -11,6 +11,9 @@
   "files": [
     "dist"
   ],
+  "scripts": {
+    "build": "tsc"
+  },
   "bin": {
     "parse-server-schema": "bin/parse-server-schema.js"
   },
