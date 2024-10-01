@@ -37,7 +37,8 @@ export async function loadConfig(
     url
   ) {
     console.log(
-      "[@openinc/parse-server-schema] Using config from process.env with PARSE_SERVER_FETCH_SCHEMA_SERVER_URL"
+      "[@openinc/parse-server-schema] Using config from process.env with PARSE_SERVER_FETCH_SCHEMA_SERVER_URL: " +
+        url
     );
 
     return {
@@ -49,7 +50,8 @@ export async function loadConfig(
 
   if (PARSE_SERVER_APPLICATION_ID && PARSE_SERVER_MASTER_KEY && url) {
     console.log(
-      "[@openinc/parse-server-schema] Using config from process.env with PARSE_SERVER_URL"
+      "[@openinc/parse-server-schema] Using config from process.env with PARSE_SERVER_URL: " +
+        url
     );
 
     return {
