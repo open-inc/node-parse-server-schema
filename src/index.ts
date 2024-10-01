@@ -14,44 +14,78 @@ import { equals } from "./helper";
 import { ConfigInterface, SchemaInterface } from "./types";
 
 export async function loadConfig(
-  configPath?: string
+  configPath?: string,
+  options?: { operation: string }
 ): Promise<ConfigInterface> {
   const {
     PARSE_SERVER_APPLICATION_ID,
     PARSE_SERVER_MASTER_KEY,
     PARSE_PUBLIC_SERVER_URL,
     PARSE_SERVER_URL,
-    PARSE_SERVER_FETCH_SCHEMA_SERVER_URL,
-    PARSE_SERVER_FETCH_SCHEMA_APPID,
-    PARSE_SERVER_FETCH_SCHEMA_MASTERKEY,
+    PARSE_SERVER_DOWN_SCHEMA_SERVER_URL,
+    PARSE_SERVER_DOWN_SCHEMA_APPID,
+    PARSE_SERVER_DOWN_SCHEMA_MASTERKEY,
+    PARSE_SERVER_UP_SCHEMA_SERVER_URL,
+    PARSE_SERVER_UP_SCHEMA_APPID,
+    PARSE_SERVER_UP_SCHEMA_MASTERKEY,
   } = process.env;
 
-  const url =
-    PARSE_SERVER_FETCH_SCHEMA_SERVER_URL ||
-    PARSE_SERVER_URL ||
-    PARSE_PUBLIC_SERVER_URL;
-
+  //Set url to the fetch schema server url if it is set and options.operation is "down"
   if (
-    PARSE_SERVER_FETCH_SCHEMA_APPID &&
-    PARSE_SERVER_FETCH_SCHEMA_MASTERKEY &&
-    url
+    options?.operation === "down" &&
+    PARSE_SERVER_DOWN_SCHEMA_SERVER_URL &&
+    PARSE_SERVER_DOWN_SCHEMA_APPID &&
+    PARSE_SERVER_DOWN_SCHEMA_MASTERKEY
   ) {
     console.log(
-      "[@openinc/parse-server-schema] Using config from process.env with PARSE_SERVER_FETCH_SCHEMA_SERVER_URL: " +
-        url
+      "[@openinc/parse-server-schema] Using config from process.env with PARSE_SERVER_DOWN_SCHEMA_SERVER_URL: " +
+        PARSE_SERVER_DOWN_SCHEMA_SERVER_URL +
+        " with APPID: " +
+        PARSE_SERVER_DOWN_SCHEMA_APPID +
+        " and MASTERKEY: " +
+        PARSE_SERVER_DOWN_SCHEMA_MASTERKEY
     );
 
     return {
-      publicServerURL: url,
-      appId: PARSE_SERVER_FETCH_SCHEMA_APPID,
-      masterKey: PARSE_SERVER_FETCH_SCHEMA_MASTERKEY,
+      publicServerURL: PARSE_SERVER_DOWN_SCHEMA_SERVER_URL,
+      appId: PARSE_SERVER_DOWN_SCHEMA_APPID,
+      masterKey: PARSE_SERVER_DOWN_SCHEMA_MASTERKEY,
     };
   }
 
+  //Set url to the push schema server url if it is set and options.operation is "up"
+  if (
+    options?.operation === "up" &&
+    PARSE_SERVER_UP_SCHEMA_SERVER_URL &&
+    PARSE_SERVER_UP_SCHEMA_APPID &&
+    PARSE_SERVER_UP_SCHEMA_MASTERKEY
+  ) {
+    console.log(
+      "[@openinc/parse-server-schema] Using config from process.env with PARSE_SERVER_UP_SCHEMA_SERVER_URL: " +
+        PARSE_SERVER_UP_SCHEMA_SERVER_URL +
+        " with APPID: " +
+        PARSE_SERVER_UP_SCHEMA_APPID +
+        " and MASTERKEY: " +
+        PARSE_SERVER_UP_SCHEMA_MASTERKEY
+    );
+
+    return {
+      publicServerURL: PARSE_SERVER_UP_SCHEMA_SERVER_URL,
+      appId: PARSE_SERVER_UP_SCHEMA_APPID,
+      masterKey: PARSE_SERVER_UP_SCHEMA_MASTERKEY,
+    };
+  }
+
+  //Use default env variables
+  const url = PARSE_SERVER_URL || PARSE_PUBLIC_SERVER_URL;
   if (PARSE_SERVER_APPLICATION_ID && PARSE_SERVER_MASTER_KEY && url) {
     console.log(
       "[@openinc/parse-server-schema] Using config from process.env with PARSE_SERVER_URL: " +
-        url
+        url +
+        " with APPID: " +
+        PARSE_SERVER_APPLICATION_ID +
+        " and MASTERKEY: " +
+        PARSE_SERVER_MASTER_KEY
     );
 
     return {

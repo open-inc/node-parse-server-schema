@@ -29,7 +29,9 @@ async function main() {
     .option("--ignore <ignore...>", "Class(es) to ignore", "")
     .description("Fetch the schema from Parse Server")
     .action(async (schemaPath, options) => {
-      const cfg = await loadConfig(program.opts().configPath);
+      const cfg = await loadConfig(program.opts().configPath, {
+        operation: "down",
+      });
 
       await down(cfg, schemaPath, options);
     });
@@ -45,7 +47,9 @@ async function main() {
     .option("--safe", "This will prevent destructive operations", "")
     .description("Upload the local schema to Parse Server")
     .action(async (schemaPath, options) => {
-      const cfg = await loadConfig(program.opts().configPath);
+      const cfg = await loadConfig(program.opts().configPath, {
+        operation: "up",
+      });
 
       await up(cfg, schemaPath, {
         prefix: options.prefix,
