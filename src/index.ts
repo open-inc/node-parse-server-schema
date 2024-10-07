@@ -284,7 +284,7 @@ export async function up(
     if (!remote) {
       console.log("[@openinc/parse-server-schema] create", local.className);
 
-      createSchema(cfg, local);
+      await createSchema(cfg, local);
     }
   }
 
