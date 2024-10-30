@@ -151,6 +151,7 @@ export async function up(
     prefix?: string;
     deleteClasses?: boolean;
     deleteFields?: boolean;
+    deleteNonEmptyClass?: boolean;
     filter?: (className: string) => boolean;
   } = {}
 ) {
@@ -182,6 +183,7 @@ export async function up(
   const prefix = options.prefix;
   const deleteClasses = options.deleteClasses ?? true;
   const deleteFields = options.deleteFields ?? true;
+  const deleteNonEmptyClass = options.deleteNonEmptyClass ?? false;
 
   if (prefix) {
     for (const s of localSchema) {
@@ -296,7 +298,9 @@ export async function up(
     if (!local && !equals(local, remote)) {
       if (deleteClasses) {
         console.log("[@openinc/parse-server-schema] delete", remote.className);
-        await deleteSchema(cfg, remote);
+        await deleteSchema(cfg, remote, {
+          options: { deleteNonEmptyClass: deleteNonEmptyClass },
+        });
       } else {
         console.warn(
           "[@openinc/parse-server-schema] Skip deleting class: " +
@@ -312,6 +316,7 @@ export async function del(
   schemaPath: string,
   options: {
     prefix?: string;
+    deleteNonEmptyClass?: boolean;
   } = {}
 ) {
   const localSchemaPath = schemaPath
@@ -337,7 +342,9 @@ export async function del(
 
     if (remote) {
       console.log("[@openinc/parse-server-schema] delete", local.className);
-      await deleteSchema(cfg, local);
+      await deleteSchema(cfg, local, {
+        options: { deleteNonEmptyClass: options.deleteNonEmptyClass },
+      });
     }
   }
 }

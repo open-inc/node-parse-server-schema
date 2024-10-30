@@ -45,6 +45,7 @@ async function main() {
     )
     .option("--ignore <ignore...>", "Class(es) to ignore", "")
     .option("--safe", "This will prevent destructive operations", "")
+    .option("--deleteNonEmptyClass", "Delete non-empty classes", false)
     .description("Upload the local schema to Parse Server")
     .action(async (schemaPath, options) => {
       const cfg = await loadConfig(program.opts().configPath, {
@@ -56,6 +57,7 @@ async function main() {
         ignore: options.ignore,
         deleteClasses: !options.safe,
         deleteFields: !options.safe,
+        deleteNonEmptyClass: options.deleteNonEmptyClass,
       });
     });
 
@@ -66,6 +68,7 @@ async function main() {
       "Only classes with the given prefix will be deleted",
       ""
     )
+    .option("--deleteNonEmptyClass", "Delete non-empty classes", false)
     .description("Delete the local schema from Parse Server")
     .action(async (schemaPath, options) => {
       const cfg = await loadConfig(program.opts().configPath);

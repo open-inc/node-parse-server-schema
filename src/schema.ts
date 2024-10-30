@@ -135,8 +135,16 @@ export async function updateSchema(
 
 export async function deleteSchema(
   { publicServerURL, appId, masterKey }: ConfigInterface,
-  { className }: { className: string }
+  { className }: { className: string },
+  { options }: { options: { deleteNonEmptyClass: boolean | undefined } }
 ) {
+  if (options.deleteNonEmptyClass) {
+    await deleteNonEmptySchemaObjects(
+      { publicServerURL, appId, masterKey },
+      { className }
+    );
+  }
+
   return await fetch({
     url: publicServerURL + "/schemas/" + className,
     method: "DELETE",
@@ -145,4 +153,30 @@ export async function deleteSchema(
       "X-Parse-Master-Key": masterKey,
     },
   });
+}
+
+async function deleteNonEmptySchemaObjects(
+  { publicServerURL, appId, masterKey }: ConfigInterface,
+  { className }: { className: string }
+) {
+  //Purge all objects in the class
+  const objects: { results: any[] } = await fetch({
+    url: publicServerURL + "/classes/" + className,
+    method: "GET",
+    headers: {
+      "X-Parse-Application-Id": appId,
+      "X-Parse-Master-Key": masterKey,
+    },
+  });
+
+  for await (const entry of objects.results) {
+    await fetch({
+      url: publicServerURL + "/classes/" + className + "/" + entry.objectId,
+      method: "DELETE",
+      headers: {
+        "X-Parse-Application-Id": appId,
+        "X-Parse-Master-Key": masterKey,
+      },
+    });
+  }
 }
