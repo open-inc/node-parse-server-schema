@@ -1,6 +1,6 @@
 {
   "name": "@openinc/parse-server-schema",
-  "version": "1.7.10",
+  "version": "1.7.11",
   "description": "Parse Server Schema Manager",
   "keywords": [
     "parse",
