@@ -419,6 +419,7 @@ export async function typescript(
     sdk?: boolean; // "default" | "node" | "global" | "none";
     globalSdk?: boolean;
     class?: boolean;
+    is_esm?: boolean;
   }
 ) {
   let schema = await getRemoteSchema(cfg);
@@ -574,9 +575,15 @@ export async function typescript(
       );
 
       internalDependencies.forEach((dep) => {
-        file += `import type { ${p(dep)}${
-          options.sdk ? "" : "Attributes"
-        } } from "./${p(dep)}";\n`;
+        if (options.is_esm) {
+          file += `import type { ${p(dep)}${
+            options.sdk ? "" : "Attributes"
+          } } from "./${p(dep)}".js;\n`;
+        } else {
+          file += `import type { ${p(dep)}${
+            options.sdk ? "" : "Attributes"
+          } } from "./${p(dep)}";\n`;
+        }
       });
 
       if (internalDependencies.length > 0) {

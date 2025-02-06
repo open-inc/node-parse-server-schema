@@ -84,6 +84,7 @@ async function main() {
     .option("--no-class", "Don't create and register custom Parse.Object")
     .option("--no-sdk", "Don't use Parse JS SDK, just TS without dependencies")
     .option("--global-sdk", "Use a global Parse JS SDK", false)
+    .option("--is_esm", "Use ES module imports in generated files.", false)
     .action(async (typescriptPath, options) => {
       const cfg = await loadConfig(program.opts().configPath);
 
