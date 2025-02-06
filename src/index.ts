@@ -674,6 +674,16 @@ export async function typescript(
         .map((field) => field.className)
         .map((className) => {
           if (options.is_esm) {
+            //Check if className starts with "_" and if so, return export type
+            //This is for parse default classes _User, _Role, _Session
+            if (className.startsWith("_")) {
+              return `export type { ${p(className)} } from "./${p(
+                className
+              )}.js";\nexport type { ${p(className)}Attributes } from "./${p(
+                className
+              )}.js";\n`;
+            }
+
             return `export { ${p(className)} } from "./${p(
               className
             )}.js";\nexport type { ${p(className)}Attributes } from "./${p(
