@@ -672,14 +672,20 @@ export async function typescript(
       path.resolve(tsPath, "index.ts"),
       schema
         .map((field) => field.className)
-        .map(
-          (className) =>
-            `export { ${p(className)} } from "./${p(
+        .map((className) => {
+          if (options.is_esm) {
+            return `export { ${p(className)} } from "./${p(
               className
-            )}";\nexport type { ${p(className)}Attributes } from "./${p(
+            )}.js";\nexport type { ${p(className)}Attributes } from "./${p(
               className
-            )}";\n`
-        )
+            )}.js";\n`;
+          }
+          return `export { ${p(className)} } from "./${p(
+            className
+          )}";\nexport type { ${p(className)}Attributes } from "./${p(
+            className
+          )}";\n`;
+        })
         .join("\n") + "\n"
     );
   } else {
@@ -687,10 +693,17 @@ export async function typescript(
       path.resolve(tsPath, "index.ts"),
       schema
         .map((field) => field.className)
-        .map(
-          (className) =>
-            `export { ${p(className)}Attributes } from "./${p(className)}";`
-        )
+        .map((className) => {
+          if (options.is_esm) {
+            return `export { ${p(className)}Attributes } from "./${p(
+              className
+            )}.js";`;
+          }
+
+          return `export { ${p(className)}Attributes } from "./${p(
+            className
+          )}";`;
+        })
         .join("\n") + "\n"
     );
   }
