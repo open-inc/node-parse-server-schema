@@ -578,7 +578,7 @@ export async function typescript(
         if (options.is_esm) {
           file += `import type { ${p(dep)}${
             options.sdk ? "" : "Attributes"
-          } } from "./${p(dep)}".js;\n`;
+          } } from "./${p(dep)}.js";\n`;
         } else {
           file += `import type { ${p(dep)}${
             options.sdk ? "" : "Attributes"
