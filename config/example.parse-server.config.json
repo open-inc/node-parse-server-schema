@@ -1,0 +1,5 @@
+{
+  "masterKey": "my-parse-master-key",
+  "publicServerURL": "https://my-parse-server.com",
+  "appId": "my-parse-app-id"
+}
