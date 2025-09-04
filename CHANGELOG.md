@@ -1,3 +1,10 @@
+## [2.0.1](https://github.com/open-inc/node-parse-server-schema/compare/v2.0.0...v2.0.1) (2025-09-04)
+
+
+### Bug Fixes
+
+* Add semantic release npm ([08292cf](https://github.com/open-inc/node-parse-server-schema/commit/08292cf2b395e4561a58823a477e819fe99fd9b5))
+
 # [2.0.0](https://github.com/open-inc/node-parse-server-schema/compare/v1.7.12...v2.0.0) (2025-09-04)
 
 
