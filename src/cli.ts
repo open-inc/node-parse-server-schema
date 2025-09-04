@@ -1,11 +1,10 @@
-// @ts-check
-require("dotenv").config();
+import 'dotenv/config';
 
-// @ts-ignore
-import pkg from "../package.json";
+import pkg from "../package.json" with { type: "json" };
 
 import { Command } from "commander";
-import { del, down, loadConfig, typescript, up } from "./index";
+import { loadConfig, printConfig } from './features/config/index.js';
+import { del, down, typescript, up } from './features/schema/index.js';
 
 main().catch((error) => {
   console.error("Error: " + error.message);
@@ -17,7 +16,17 @@ async function main() {
 
   program.version(pkg.version);
 
-  program.option("--configPath <path>", "Path to .js(on) config file");
+  program
+    .option("--configPath <path>", "Path to .js(on) config file");
+
+  program
+    .command("config")
+    .description("Returns the current configuration")
+    .action(async () => {
+      const cfg = await loadConfig(program.opts().configPath);
+
+      printConfig(cfg);
+    });
 
   program
     .command("down <schemaPath>")
@@ -84,7 +93,8 @@ async function main() {
     .option("--no-class", "Don't create and register custom Parse.Object")
     .option("--no-sdk", "Don't use Parse JS SDK, just TS without dependencies")
     .option("--global-sdk", "Use a global Parse JS SDK", false)
-    .option("--is_esm", "Use ES module imports in generated files.", false)
+    .option("--is-esm", "Use ES module imports in generated files.", false)
+    .option("--custom-class-field-types-config <path>", "Path to .json config file for custom class field types")
     .action(async (typescriptPath, options) => {
       const cfg = await loadConfig(program.opts().configPath);
 
