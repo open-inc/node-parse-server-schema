@@ -80,8 +80,8 @@ The file has to be an array of form `classname` --> `fields` --> `[key: fieldnam
     "classname": "YourClassName",
     "fields": [
       {
-        "fieldname": "XXX",
-        "importfrom": "import { XXX } from \"../path/to/type\""
+        "fieldname": "fieldtype",
+        "importfrom": "import { fieldtype } from \"../path/to/type\""
       }
     ]
   }
