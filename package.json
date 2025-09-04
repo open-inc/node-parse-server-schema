@@ -1,7 +1,9 @@
 {
   "name": "@openinc/parse-server-schema",
   "version": "1.7.12",
-  "description": "Parse Server Schema Manager",
+  "description": "Parse Server Schema Manager - Provides functionality to manage Parse Server schemas like converting to typescript interfaces, exporting and importing schemas.",
+  "packageManager": "pnpm@10.15.1",
+  "type": "module",
   "keywords": [
     "parse",
     "schema"
@@ -9,23 +11,69 @@
   "license": "MIT",
   "main": "dist/index.js",
   "files": [
-    "dist"
+    "dist",
+    "bin",
+    "README.md",
+    "LICENSE",
+    "package.json"
   ],
+  "release": {
+    "branches": [
+      "master"
+    ],
+    "repositoryUrl": "https://github.com/open-inc/node-parse-server-schema.git",
+    "plugins": [
+      "@semantic-release/commit-analyzer",
+      "@semantic-release/release-notes-generator",
+      "@semantic-release/changelog",
+      "@semantic-release/github",
+      "semantic-release-export-data"
+    ],
+    "prepare": [
+      "@semantic-release/changelog",
+      "@semantic-release/npm",
+      {
+        "path": "@semantic-release/git",
+        "assets": [
+          "package.json",
+          "pnpm-lock.json",
+          "CHANGELOG.md"
+        ],
+        "message": "chore(release): Release ${nextRelease.version} \n\n${nextRelease.notes}"
+      }
+    ]
+  },
+  "author": {
+    "name": "open.INC GmbH",
+    "email": "info@openinc.de",
+    "url": "https://openinc.de"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/open-inc/node-parse-server-schema.git"
+  },
   "scripts": {
-    "build": "tsc"
+    "start": "node bin/parse-server-schema.js",
+    "build": "rimraf ./dist && tsc --build --force"
   },
   "bin": {
     "parse-server-schema": "bin/parse-server-schema.js"
   },
   "dependencies": {
-    "commander": "^9.0.0",
-    "dotenv": "^16.0.0",
-    "mkdirp": "^1.0.0",
-    "node-fetch": "^2.0.0"
+    "commander": "^14.0.0",
+    "dotenv": "^17.2.2",
+    "mkdirp": "^3.0.1",
+    "semantic-release": "^24.2.7",
+    "rimraf": "^6.0.1"
   },
   "devDependencies": {
-    "@types/mkdirp": "^1.0.0",
-    "@types/node": "^16.0.0",
-    "@types/node-fetch": "^2.0.0"
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/commit-analyzer": "^13.0.1",
+    "@semantic-release/exec": "^7.1.0",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/github": "^11.0.5",
+    "@semantic-release/release-notes-generator": "^14.0.3",
+    "@types/node": "^24.3.0",
+    "semantic-release-export-data": "^1.1.1"
   }
 }
