@@ -14,5 +14,4 @@ export function printConfig(cfg: ConfigInterface) {
   console.log("  Server URL: " + cfg.publicServerURL);
   console.log("  App ID: " + cfg.appId);
   console.log("  Master Key: " + (cfg.masterKey ? "********" : "(not set)"));
-  console.log("  Custom Class Field Types: ");
 }
