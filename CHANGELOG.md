@@ -1,3 +1,10 @@
+## [2.0.3](https://github.com/open-inc/node-parse-server-schema/compare/v2.0.2...v2.0.3) (2025-09-04)
+
+
+### Bug Fixes
+
+* Use deepCopy for schema picking ([3c046b8](https://github.com/open-inc/node-parse-server-schema/commit/3c046b803706c4d611efbd4b9a690ae409a44cbc))
+
 ## [2.0.2](https://github.com/open-inc/node-parse-server-schema/compare/v2.0.1...v2.0.2) (2025-09-04)
 
 
