@@ -16,18 +16,6 @@ npm i -D @openinc/parse-server-schema
 npx parse-server-schema --help
 ```
 
-### Config file (JSON)
-
-Here's what a valid JSON file looks like:
-
-```JSON
-{
-  "masterKey": "my-parse-master-key",
-  "publicServerURL": "https://my-parse-server.com",
-  "appId": "my-parse-app-id"
-}
-```
-
 ### Generate local schemas from distant Parse server
 
 ```
@@ -40,13 +28,73 @@ parse-server-schema down ./path/to/local/schemas --configPath ./path/to/my-parse
 parse-server-schema typescript ./path/to/my/local/types --configPath ./path/to/my-parse-conf.json
 ```
 
+## Configuration
+
+### Config files
+
+By default the config file is expected to be in _./config/parse-server.config.json_
+
+You can specify the path providing the option `--configPath`.
+
+Here's what a valid JSON file looks like:
+
+```JSON
+{
+  "masterKey": "my-parse-master-key",
+  "publicServerURL": "https://my-parse-server.com",
+  "appId": "my-parse-app-id"
+}
+```
+
+### Environment variables
+
+The following variables can be set:
+
+- PARSE_SERVER_APPLICATION_ID
+- PARSE_SERVER_MASTER_KEY
+- PARSE_PUBLIC_SERVER_URL
+- PARSE_SERVER_URL
+
+**Distinct values for "down" script (optional)**
+
+- PARSE_SERVER_DOWN_SCHEMA_SERVER_URL
+- PARSE_SERVER_DOWN_SCHEMA_APPID
+- PARSE_SERVER_DOWN_SCHEMA_MASTERKEY
+
+**Distinct values for "up" script (optional)**
+
+- PARSE_SERVER_UP_SCHEMA_SERVER_URL
+- PARSE_SERVER_UP_SCHEMA_APPID
+- PARSE_SERVER_UP_SCHEMA_MASTERKEY
+
+### Providing custom types for class fields
+
+By default array and object typed class fields are set to any[]/any. By specifing `--custom-class-field-types-config <path>` in the cli command you can set these to custom types.
+The file has to be an array of form `classname` --> `fields` --> `[key: fieldname]: type`. Specify the **importfrom** option to import the type correctly!
+
+**Example:**
+
+```json
+[
+  {
+    "classname": "YourClassName",
+    "fields": [
+      {
+        "fieldname": "XXX",
+        "importfrom": "import { XXX } from \"../path/to/type\""
+      }
+    ]
+  }
+]
+```
+
 ## Version update and deployment to npm
 
-A GitHub workflow publishes the script automatically to npm when a new version is released. You can trigger this with the following commands:
+The next version number is calculated by semantic release.
 
-`npm version patch`
+When commiting keep the structure in mind: https://docs.openinc.dev/docs/general/semanticrelease
 
-`git push --follow-tags`
+A GitHub workflow publishes the package automatically to npm.
 
 ## Programmatic Usage
 
