@@ -1,3 +1,10 @@
+## [2.0.2](https://github.com/open-inc/node-parse-server-schema/compare/v2.0.1...v2.0.2) (2025-09-04)
+
+
+### Bug Fixes
+
+* Remove unused log ([4d98728](https://github.com/open-inc/node-parse-server-schema/commit/4d987280aa9226276a6f919861d18e6eecf11195))
+
 ## [2.0.1](https://github.com/open-inc/node-parse-server-schema/compare/v2.0.0...v2.0.1) (2025-09-04)
 
 
