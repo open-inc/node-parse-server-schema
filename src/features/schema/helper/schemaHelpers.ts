@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { copy, fetchHandler } from "../../../helper.js";
+import { deepClone, fetchHandler } from "../../../helper.js";
 import type { ConfigInterface } from "../../config/index.js";
 import type { SchemaInterface } from "../index.js";
 
@@ -13,7 +13,7 @@ export function pickSchema(schema: SchemaInterface): SchemaInterface {
     throw new Error("Schema is missing 'className' key.");
   }
 
-  schema = copy(schema);
+  schema = deepClone(schema);
 
   if (schema.fields) {
     delete schema.fields.objectId;
