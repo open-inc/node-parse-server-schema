@@ -4,6 +4,8 @@ A schema manager for Parse Server
 
 ## CLI Usage
 
+Repository on npm: https://www.npmjs.com/package/@openinc/parse-server-schema
+
 ```
 npm i -g @openinc/parse-server-schema
 
