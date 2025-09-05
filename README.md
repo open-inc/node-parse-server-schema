@@ -30,7 +30,12 @@ parse-server-schema typescript ./path/to/my/local/types --configPath ./path/to/m
 
 ## Configuration
 
-### Config files
+You have two options to connect to parse server.
+
+1. By providing a json config file
+2. By providing an env with the necessary values set.
+
+### 1. Config files
 
 By default the config file is expected to be in _./config/parse-server.config.json_
 
@@ -46,9 +51,9 @@ Here's what a valid JSON file looks like:
 }
 ```
 
-### Environment variables
+### 2. Environment variables
 
-The following variables can be set:
+The following variables can be set. By default the package looks for process.env, so takes every .env in cwd into account and uses these information to connect to parse server. The json file is ignored in this scenarion.
 
 - PARSE_SERVER_APPLICATION_ID
 - PARSE_SERVER_MASTER_KEY
