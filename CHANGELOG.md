@@ -1,3 +1,10 @@
+## [2.0.4](https://github.com/open-inc/node-parse-server-schema/compare/v2.0.3...v2.0.4) (2025-09-08)
+
+
+### Bug Fixes
+
+* Use custom field type in all fields ([e6a097b](https://github.com/open-inc/node-parse-server-schema/commit/e6a097b13860032dcb1ecfe6c11963c4b57c4549))
+
 ## [2.0.3](https://github.com/open-inc/node-parse-server-schema/compare/v2.0.2...v2.0.3) (2025-09-04)
 
 
