@@ -44,6 +44,11 @@ export function getTypescriptFieldType(
   className: string,
   config?: { customClassFieldTypes?: CustomClassFieldType[] }
 ): { type: string; importfrom?: string } {
+  if (config && fieldName && className) {
+    const custom = getCustomFieldType(config, className, fieldName);
+    if (custom) return custom;
+  }
+
   switch (fieldAttributes.type) {
     case "String":
       return { type: "string" };
@@ -54,21 +59,11 @@ export function getTypescriptFieldType(
     case "Boolean":
       return { type: "boolean" };
 
-    case "Object": {
-      if (config && fieldName) {
-        const custom = getCustomFieldType(config, className, fieldName);
-        if (custom) return custom;
-      }
+    case "Object":
       return { type: `any` };
-    }
 
-    case "Array": {
-      if (config && fieldName) {
-        const custom = getCustomFieldType(config, className, fieldName);
-        if (custom) return custom;
-      }
+    case "Array":
       return { type: `any[]` };
-    }
 
     case "Date":
       if (sdk) {
