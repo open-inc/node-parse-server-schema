@@ -1,5 +1,4 @@
 import path from "path";
-import type { ConfigInterface } from "../../config/index.js";
 import { deleteSchema, getLocalSchema, getRemoteSchema } from "../index.js";
 
 /**
@@ -11,7 +10,6 @@ import { deleteSchema, getLocalSchema, getRemoteSchema } from "../index.js";
  * @param options.deleteNonEmptyClass Whether to delete non-empty classes when deleting a class. Default is
  */
 export async function del(
-  cfg: ConfigInterface,
   schemaPath: string,
   options: {
     prefix?: string;
@@ -23,7 +21,7 @@ export async function del(
     : path.resolve(".", "schema", "classes");
 
   let localSchema = await getLocalSchema(localSchemaPath);
-  let remoteSchema = await getRemoteSchema(cfg);
+  let remoteSchema = await getRemoteSchema();
 
   const prefix = options.prefix;
 
@@ -40,8 +38,10 @@ export async function del(
     const remote = remoteSchema.find((s) => s.className === local.className);
 
     if (remote) {
-      console.log("[@openinc/parse-server-schema] delete", local.className);
-      await deleteSchema(cfg, local, {
+      console.log(
+        `[@openinc/parse-server-schema] 🗑️ Deleting schema: ${local.className}`
+      );
+      await deleteSchema(local, {
         options: { deleteNonEmptyClass: options.deleteNonEmptyClass },
       });
     }

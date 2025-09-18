@@ -1,7 +1,6 @@
 import fs from "fs";
 import { mkdirp } from "mkdirp";
 import path from "path";
-import type { ConfigInterface } from "../../config/index.js";
 import { getRemoteSchema } from "../index.js";
 
 /**
@@ -13,14 +12,13 @@ import { getRemoteSchema } from "../index.js";
  * @param options.ignore Class(es) to ignore. You can use * at the end to ignore all classes that start with the given string.
  */
 export async function down(
-  cfg: ConfigInterface,
   schemaPath: string,
   options: {
     prefix?: string;
     ignore?: string[];
   } = {}
 ) {
-  let schema = await getRemoteSchema(cfg);
+  let schema = await getRemoteSchema();
 
   const prefix = options.prefix;
 

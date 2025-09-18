@@ -1,6 +1,5 @@
 import path from "path";
 import { equals } from "../../../helper.js";
-import type { ConfigInterface } from "../../config/index.js";
 import {
   createSchema,
   deleteSchema,
@@ -21,7 +20,6 @@ import {
  * @param options.deleteNonEmptyClass Whether to delete non-empty classes when deleting a class. Default is
  */
 export async function up(
-  cfg: ConfigInterface,
   schemaPath: string,
   options: {
     ignore?: string[];
@@ -41,7 +39,7 @@ export async function up(
     options.prefix || "",
     options.filter
   );
-  let remoteSchema = await getRemoteSchema(cfg);
+  let remoteSchema = await getRemoteSchema();
 
   if (Array.isArray(options.ignore)) {
     for (let ignore of options.ignore) {
@@ -85,7 +83,9 @@ export async function up(
 
     // update an existing schema
     if (remote && !equals(local, remote)) {
-      console.log("[@openinc/parse-server-schema] update", local.className);
+      console.log(
+        `[@openinc/parse-server-schema] 🔄 Updating schema: ${local.className}`
+      );
 
       const fieldsToCreate = [];
       const fieldsToDelete = [];
@@ -119,7 +119,7 @@ export async function up(
       // delete schema request
       if (fieldsToDelete.length > 0 || clpChanged) {
         if (deleteFields) {
-          await updateSchema(cfg, {
+          await updateSchema({
             className: local.className,
             // @ts-ignore
             fields: Object.fromEntries(
@@ -149,7 +149,7 @@ export async function up(
 
       // create schema request
       if (fieldsToCreate.length > 0 || clpChanged) {
-        await updateSchema(cfg, {
+        await updateSchema({
           className: local.className,
           fields: Object.fromEntries(
             fieldsToCreate.map((field) =>
@@ -163,9 +163,11 @@ export async function up(
 
     // create a missing schema
     if (!remote) {
-      console.log("[@openinc/parse-server-schema] create", local.className);
+      console.log(
+        `[@openinc/parse-server-schema] ➕ Creating schema: ${local.className}`
+      );
 
-      await createSchema(cfg, local);
+      await createSchema(local);
     }
   }
 
@@ -176,8 +178,10 @@ export async function up(
     // delete a missing schema
     if (!local && !equals(local, remote)) {
       if (deleteClasses) {
-        console.log("[@openinc/parse-server-schema] delete", remote.className);
-        await deleteSchema(cfg, remote, {
+        console.log(
+          `[@openinc/parse-server-schema] 🗑️ Deleting schema: ${remote.className}`
+        );
+        await deleteSchema(remote, {
           options: { deleteNonEmptyClass: deleteNonEmptyClass },
         });
       } else {
