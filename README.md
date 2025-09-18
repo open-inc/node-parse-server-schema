@@ -4,7 +4,7 @@ A schema manager for Parse Server
 
 ## CLI Usage
 
-Repository on npm:| `--include <include...>` | string[] | `[]` | Additional class name(s) to add to the schema (beyond prefix filter). Supports wildcards with `*`. Can be specified multiple times |https://www.npmjs.com/package/@openinc/parse-server-schema
+Repository on npm: https://www.npmjs.com/package/@openinc/parse-server-schema
 
 ```
 npm i -g @openinc/parse-server-schema
