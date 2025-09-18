@@ -1,3 +1,10 @@
+## [3.0.1](https://github.com/open-inc/node-parse-server-schema/compare/v3.0.0...v3.0.1) (2025-09-18)
+
+
+### Bug Fixes
+
+* Fix documentation ([06d551e](https://github.com/open-inc/node-parse-server-schema/commit/06d551e34a5cb2789a467c624ff533debb4d237e))
+
 # [3.0.0](https://github.com/open-inc/node-parse-server-schema/compare/v2.0.4...v3.0.0) (2025-09-18)
 
 
