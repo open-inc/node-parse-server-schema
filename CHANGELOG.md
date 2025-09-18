@@ -1,3 +1,10 @@
+## [3.0.2](https://github.com/open-inc/node-parse-server-schema/compare/v3.0.1...v3.0.2) (2025-09-18)
+
+
+### Bug Fixes
+
+* Copy handlebars templates during build ([b7e27f5](https://github.com/open-inc/node-parse-server-schema/commit/b7e27f58440fe544d0192f559c70e14e6d28d2d4))
+
 ## [3.0.1](https://github.com/open-inc/node-parse-server-schema/compare/v3.0.0...v3.0.1) (2025-09-18)
 
 
