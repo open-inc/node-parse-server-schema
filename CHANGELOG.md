@@ -1,3 +1,10 @@
+## [3.0.5](https://github.com/open-inc/node-parse-server-schema/compare/v3.0.4...v3.0.5) (2025-09-18)
+
+
+### Bug Fixes
+
+* Fix spacing in setters ([3ee0cba](https://github.com/open-inc/node-parse-server-schema/commit/3ee0cbae6887801733c6f1b48a7350b99301149b))
+
 ## [3.0.4](https://github.com/open-inc/node-parse-server-schema/compare/v3.0.3...v3.0.4) (2025-09-18)
 
 
