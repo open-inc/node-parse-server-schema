@@ -15,7 +15,9 @@
     "bin",
     "README.md",
     "LICENSE",
-    "package.json"
+    "package.json",
+    "CHANGELOG.md",
+    "src/features/schema/templates"
   ],
   "release": {
     "branches": [
@@ -55,7 +57,8 @@
   },
   "scripts": {
     "start": "node bin/parse-server-schema.js",
-    "build": "rimraf ./dist && tsc --build --force"
+    "build": "rimraf ./dist && tsc --build --force && node scripts/copy-templates.js",
+    "copy-templates": "node scripts/copy-templates.js"
   },
   "bin": {
     "parse-server-schema": "bin/parse-server-schema.js"
