@@ -1,3 +1,10 @@
+## [3.0.4](https://github.com/open-inc/node-parse-server-schema/compare/v3.0.3...v3.0.4) (2025-09-18)
+
+
+### Bug Fixes
+
+* move null to undefined ([f0ac266](https://github.com/open-inc/node-parse-server-schema/commit/f0ac2669f99a72a5372547455568fb19d5c218d5))
+
 ## [3.0.3](https://github.com/open-inc/node-parse-server-schema/compare/v3.0.2...v3.0.3) (2025-09-18)
 
 
