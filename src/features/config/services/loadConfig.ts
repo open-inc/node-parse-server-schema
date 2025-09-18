@@ -1,6 +1,7 @@
 import "dotenv/config";
 import fs from "fs";
 import path from "path";
+import { Config } from "../classes/Config.js";
 import type { ConfigInterface } from "../index.js";
 
 /**
@@ -42,11 +43,14 @@ export async function loadConfig(
         PARSE_SERVER_DOWN_SCHEMA_MASTERKEY
     );
 
-    return {
+    const configData = {
       publicServerURL: PARSE_SERVER_DOWN_SCHEMA_SERVER_URL,
       appId: PARSE_SERVER_DOWN_SCHEMA_APPID,
       masterKey: PARSE_SERVER_DOWN_SCHEMA_MASTERKEY,
     };
+
+    Config.initialize(configData);
+    return configData;
   }
 
   //Set url to the push schema server url if it is set and options.operation is "up"
@@ -65,11 +69,14 @@ export async function loadConfig(
         PARSE_SERVER_UP_SCHEMA_MASTERKEY
     );
 
-    return {
+    const configData = {
       publicServerURL: PARSE_SERVER_UP_SCHEMA_SERVER_URL,
       appId: PARSE_SERVER_UP_SCHEMA_APPID,
       masterKey: PARSE_SERVER_UP_SCHEMA_MASTERKEY,
     };
+
+    Config.initialize(configData);
+    return configData;
   }
 
   //Use default env variables
@@ -84,11 +91,14 @@ export async function loadConfig(
         PARSE_SERVER_MASTER_KEY
     );
 
-    return {
+    const configData = {
       publicServerURL: url,
       appId: PARSE_SERVER_APPLICATION_ID,
       masterKey: PARSE_SERVER_MASTER_KEY,
     };
+
+    Config.initialize(configData);
+    return configData;
   }
 
   configPath = path.resolve(configPath || "config/parse-server.config.json");
@@ -136,5 +146,6 @@ export async function loadConfig(
     process.exit(1);
   }
 
+  Config.initialize(config);
   return config;
 }
