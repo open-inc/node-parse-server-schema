@@ -1,0 +1,76 @@
+{{#if sdk}}{{#unless globalSdk}}import Parse from "parse";{{/unless}}{{/if}}
+{{#if importDependencies.length}}
+
+{{#each importDependencies}}
+{{{this}}}
+{{/each}}
+{{/if}}
+{{#if internalDependencies.length}}
+
+{{#each internalDependencies}}
+import type { {{getClassnameWithoutPrefix ../prefix this}}{{#unless ../sdk}}Attributes{{/unless}} } from "./{{getClassnameWithoutPrefix ../prefix this}}{{#if ../isEsm}}.js{{/if}}";
+{{/each}}
+{{/if}}
+{{#if externalDependencies.length}}
+
+{{#each externalDependencies}}
+type {{getClassnameWithoutPrefix ../prefix this}} = Parse.Object;
+{{/each}}
+{{/if}}
+
+export interface {{getClassnameWithoutPrefix prefix className}}Attributes {
+{{#each attributes}}
+  {{fieldname}}: {{{type}}};
+{{/each}}
+}
+{{#if sdk}}
+{{#if isClass}}
+{{#ifEquals className "_Session"}}
+export type {{className}} = Parse.Session<{{className}}Attributes>;
+{{else}}{{#ifEquals className "_User"}}
+export type {{className}} = Parse.User<{{className}}Attributes>;
+{{else}}{{#ifEquals className "_Role"}}
+export type {{className}} = Parse.Role<{{className}}Attributes>;
+{{else}}
+
+export class {{getClassnameWithoutPrefix prefix className}} extends Parse.Object<{{getClassnameWithoutPrefix prefix className}}Attributes> {
+  static className: string = "{{className}}";
+
+  constructor(data?: Partial<{{getClassnameWithoutPrefix prefix className}}Attributes>) {
+    super("{{className}}", data as {{getClassnameWithoutPrefix prefix className}}Attributes);
+  }
+
+{{#each getters}}
+  get {{fieldname}}(): {{{type}}} {
+{{{returnType}}}
+  }
+{{#if ../setters}}
+{{#each ../setters}}
+{{#ifEquals fieldname ../fieldname}}
+  set {{fieldname}}(value: {{{type}}}) {
+{{{action}}}
+  }
+{{/ifEquals}}
+{{/each}}
+{{/if}}
+{{#unless @last}}
+
+{{/unless}}
+{{/each}}
+}
+
+Parse.Object.registerSubclass("{{className}}", {{getClassnameWithoutPrefix prefix className}});
+{{/ifEquals}}{{/ifEquals}}{{/ifEquals}}
+{{else}}
+
+{{#ifEquals className "_Session"}}
+export type {{className}} = Parse.Session<{{className}}Attributes>;
+{{else}}{{#ifEquals className "_User"}}
+export type {{className}} = Parse.User<{{className}}Attributes>;
+{{else}}{{#ifEquals className "_Role"}}
+export type {{className}} = Parse.Role<{{className}}Attributes>;
+{{else}}
+export type {{getClassnameWithoutPrefix prefix className}} = Parse.Object<{{getClassnameWithoutPrefix prefix className}}Attributes>;
+{{/ifEquals}}{{/ifEquals}}{{/ifEquals}}
+{{/if}}
+{{/if}}

@@ -1,5 +1,6 @@
 export interface SchemaInterface {
   className: string;
+
   fields: {
     [key: string]: (
       | {
@@ -23,6 +24,7 @@ export interface SchemaInterface {
       defaultValue?: any;
     };
   };
+
   classLevelPermissions: {
     find: {
       [key: string]: boolean;

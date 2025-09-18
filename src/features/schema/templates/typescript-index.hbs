@@ -1,0 +1,16 @@
+{{#each classes}}
+{{#if ../sdk}}
+{{#if (startsWith className "_")}}
+export type { {{getClassnameWithoutPrefix ../prefix className}} } from "./{{getClassnameWithoutPrefix ../prefix className}}{{#if ../isEsm}}.js{{/if}}";
+export type { {{getClassnameWithoutPrefix ../prefix className}}Attributes } from "./{{getClassnameWithoutPrefix ../prefix className}}{{#if ../isEsm}}.js{{/if}}";
+{{else}}
+export { {{getClassnameWithoutPrefix ../prefix className}} } from "./{{getClassnameWithoutPrefix ../prefix className}}{{#if ../isEsm}}.js{{/if}}";
+export type { {{getClassnameWithoutPrefix ../prefix className}}Attributes } from "./{{getClassnameWithoutPrefix ../prefix className}}{{#if ../isEsm}}.js{{/if}}";
+{{/if}}
+{{else}}
+export type { {{getClassnameWithoutPrefix ../prefix className}}Attributes } from "./{{getClassnameWithoutPrefix ../prefix className}}{{#if ../isEsm}}.js{{/if}}";
+{{/if}}
+{{#unless @last}}
+
+{{/unless}}
+{{/each}}

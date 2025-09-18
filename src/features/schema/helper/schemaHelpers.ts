@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { deepClone, fetchHandler } from "../../../helper.js";
-import type { ConfigInterface } from "../../config/index.js";
+import { Config } from "../../config/index.js";
 import type { SchemaInterface } from "../index.js";
 
 export function pickSchema(schema: SchemaInterface): SchemaInterface {
@@ -61,15 +61,15 @@ export async function getLocalSchema(
 }
 
 export async function getRemoteSchema<T>(
-  { publicServerURL, appId, masterKey }: ConfigInterface,
   filter?: (className: string) => boolean
 ): Promise<SchemaInterface[]> {
+  const config = Config.getInstance();
   let schema: SchemaInterface[] = await fetchHandler<T>({
-    url: publicServerURL + "/schemas",
+    url: config.publicServerURL + "/schemas",
     options: {
       headers: {
-        "X-Parse-Application-Id": appId,
-        "X-Parse-Master-Key": masterKey,
+        "X-Parse-Application-Id": config.appId,
+        "X-Parse-Master-Key": config.masterKey,
       },
     },
   })
@@ -103,17 +103,15 @@ export async function getRemoteSchema<T>(
   return schema;
 }
 
-export async function createSchema<T>(
-  { publicServerURL, appId, masterKey }: ConfigInterface,
-  schema: SchemaInterface
-) {
+export async function createSchema<T>(schema: SchemaInterface) {
+  const config = Config.getInstance();
   return await fetchHandler<T>({
-    url: publicServerURL + "/schemas",
+    url: config.publicServerURL + "/schemas",
     options: {
       method: "POST",
       headers: {
-        "X-Parse-Application-Id": appId,
-        "X-Parse-Master-Key": masterKey,
+        "X-Parse-Application-Id": config.appId,
+        "X-Parse-Master-Key": config.masterKey,
         "Content-Type": "application/json",
       },
       body: JSON.stringify(schema),
@@ -121,17 +119,15 @@ export async function createSchema<T>(
   });
 }
 
-export async function updateSchema<T>(
-  { publicServerURL, appId, masterKey }: ConfigInterface,
-  schema: SchemaInterface
-) {
+export async function updateSchema<T>(schema: SchemaInterface) {
+  const config = Config.getInstance();
   return await fetchHandler<T>({
-    url: publicServerURL + "/schemas/" + schema.className,
+    url: config.publicServerURL + "/schemas/" + schema.className,
     options: {
       method: "PUT",
       headers: {
-        "X-Parse-Application-Id": appId,
-        "X-Parse-Master-Key": masterKey,
+        "X-Parse-Application-Id": config.appId,
+        "X-Parse-Master-Key": config.masterKey,
         "Content-Type": "application/json",
       },
       body: JSON.stringify(schema),
@@ -140,53 +136,53 @@ export async function updateSchema<T>(
 }
 
 export async function deleteSchema<T>(
-  { publicServerURL, appId, masterKey }: ConfigInterface,
   { className }: { className: string },
   { options }: { options: { deleteNonEmptyClass: boolean | undefined } }
 ) {
+  const config = Config.getInstance();
   if (options.deleteNonEmptyClass) {
-    await deleteNonEmptySchemaObjects(
-      { publicServerURL, appId, masterKey },
-      { className }
-    );
+    await deleteNonEmptySchemaObjects({ className });
   }
 
   return await fetchHandler<T>({
-    url: publicServerURL + "/schemas/" + className,
+    url: config.publicServerURL + "/schemas/" + className,
     options: {
       method: "DELETE",
       headers: {
-        "X-Parse-Application-Id": appId,
-        "X-Parse-Master-Key": masterKey,
+        "X-Parse-Application-Id": config.appId,
+        "X-Parse-Master-Key": config.masterKey,
       },
     },
   });
 }
 
-async function deleteNonEmptySchemaObjects(
-  { publicServerURL, appId, masterKey }: ConfigInterface,
-  { className }: { className: string }
-) {
+async function deleteNonEmptySchemaObjects({
+  className,
+}: {
+  className: string;
+}) {
+  const config = Config.getInstance();
   //Purge all objects in the class
   const objects: { results: any[] } = await fetchHandler<{ results: any[] }>({
-    url: publicServerURL + "/classes/" + className,
+    url: config.publicServerURL + "/classes/" + className,
     options: {
       method: "GET",
       headers: {
-        "X-Parse-Application-Id": appId,
-        "X-Parse-Master-Key": masterKey,
+        "X-Parse-Application-Id": config.appId,
+        "X-Parse-Master-Key": config.masterKey,
       },
     },
   });
 
   for await (const entry of objects.results) {
     await fetchHandler({
-      url: publicServerURL + "/classes/" + className + "/" + entry.objectId,
+      url:
+        config.publicServerURL + "/classes/" + className + "/" + entry.objectId,
       options: {
         method: "DELETE",
         headers: {
-          "X-Parse-Application-Id": appId,
-          "X-Parse-Master-Key": masterKey,
+          "X-Parse-Application-Id": config.appId,
+          "X-Parse-Master-Key": config.masterKey,
         },
       },
     });

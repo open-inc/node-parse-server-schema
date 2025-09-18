@@ -2,7 +2,7 @@
   "name": "@openinc/parse-server-schema",
   "version": "2.0.4",
   "description": "Parse Server Schema Manager - Provides functionality to manage Parse Server schemas like converting to typescript interfaces, exporting and importing schemas.",
-  "packageManager": "pnpm@10.15.1",
+  "packageManager": "pnpm@10.16.1",
   "type": "module",
   "keywords": [
     "parse",
@@ -61,21 +61,23 @@
     "parse-server-schema": "bin/parse-server-schema.js"
   },
   "dependencies": {
-    "commander": "^14.0.0",
+    "commander": "^14.0.1",
     "dotenv": "^17.2.2",
+    "handlebars": "^4.7.8",
     "mkdirp": "^3.0.1",
-    "semantic-release": "^24.2.7",
-    "rimraf": "^6.0.1"
+    "rimraf": "^6.0.1",
+    "semantic-release": "^24.2.8"
   },
   "devDependencies": {
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/commit-analyzer": "^13.0.1",
     "@semantic-release/exec": "^7.1.0",
     "@semantic-release/git": "^10.0.1",
-    "@semantic-release/github": "^11.0.5",
+    "@semantic-release/github": "^11.0.6",
     "@semantic-release/npm": "^12.0.2",
-    "@semantic-release/release-notes-generator": "^14.0.3",
-    "@types/node": "^24.3.1",
+    "@semantic-release/release-notes-generator": "^14.1.0",
+    "@types/handlebars": "^4.1.0",
+    "@types/node": "^24.5.1",
     "semantic-release-export-data": "^1.1.1"
   }
 }
