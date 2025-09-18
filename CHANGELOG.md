@@ -1,3 +1,16 @@
+# [3.0.0](https://github.com/open-inc/node-parse-server-schema/compare/v2.0.4...v3.0.0) (2025-09-18)
+
+
+### Features
+
+* Add config singleton ([a09cf5f](https://github.com/open-inc/node-parse-server-schema/commit/a09cf5f33354119c90ee34b0bd81550935d6685d))
+* Use handlebars to create files and enhance cli options ([c785207](https://github.com/open-inc/node-parse-server-schema/commit/c785207d33f1239317e48b448f0fe491207bfd42))
+
+
+### BREAKING CHANGES
+
+* The new functionality are probably not backwards compatible!
+
 ## [2.0.4](https://github.com/open-inc/node-parse-server-schema/compare/v2.0.3...v2.0.4) (2025-09-08)
 
 
