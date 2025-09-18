@@ -269,24 +269,24 @@ export class TypescriptConversion {
         this.getter.push({
           fieldname: field,
           type: type.type,
-          returnType: `  return super.relation("${field}");`,
+          returnType: `super.relation("${field}");`,
         });
       } else {
         this.attributes.push({
-          fieldname: `${field}${nullable ? "" : "?"}`,
+          fieldname: `${field}${nullable ? "?" : ""}`,
           type: type.type + (nullable ? " | null" : ""),
         });
 
         this.getter.push({
           fieldname: field,
-          type: `${type.type}${nullable ? "" : " | undefined"}`,
-          returnType: `  return super.get("${field}");`,
+          type: `${type.type}${nullable ? " | undefined" : ""}`,
+          returnType: `super.get("${field}");`,
         });
 
         this.setter.push({
           fieldname: field,
-          type: `${type.type}${nullable ? "" : " | undefined"}`,
-          action: `  super.set("${field}", value);`,
+          type: `${type.type}${nullable ? " | undefined" : ""}`,
+          action: `super.set("${field}", value);`,
         });
       }
     }

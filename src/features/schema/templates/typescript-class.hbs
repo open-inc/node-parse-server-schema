@@ -42,7 +42,7 @@ export class {{getClassnameWithoutPrefix prefix className}} extends Parse.Object
 
 {{#each getters}}
   get {{fieldname}}(): {{{type}}} {
-{{{returnType}}}
+    return {{{returnType}}}
   }
 {{#if ../setters}}
 {{#each ../setters}}
