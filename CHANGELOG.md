@@ -1,3 +1,10 @@
+## [3.0.3](https://github.com/open-inc/node-parse-server-schema/compare/v3.0.2...v3.0.3) (2025-09-18)
+
+
+### Bug Fixes
+
+* Fix getter and setter nullable ([2a32439](https://github.com/open-inc/node-parse-server-schema/commit/2a3243947a5fc0e66ea88a41b4e832287cbf7bb2))
+
 ## [3.0.2](https://github.com/open-inc/node-parse-server-schema/compare/v3.0.1...v3.0.2) (2025-09-18)
 
 
