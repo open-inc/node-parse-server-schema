@@ -204,17 +204,6 @@ export class TypescriptConversion {
   }
 
   /**
-   * Returns whether the field is nullable.
-   * @param fieldAttributes The attributes of the field
-   * @returns Whether the field is nullable
-   */
-  private getTypescriptFieldNullable(
-    fieldAttributes: SchemaInterface["fields"][0]
-  ) {
-    return fieldAttributes.required || "defaultValue" in fieldAttributes;
-  }
-
-  /**
    * Creates getter and setter methods for the fields and adds them to the attributes and getter arrays.
    * @param fieldEntries The entries of the fields
    */
@@ -269,27 +258,38 @@ export class TypescriptConversion {
         this.getter.push({
           fieldname: field,
           type: type.type,
-          returnType: `super.relation("${field}");`,
+          returnType: `      super.relation("${field}");`,
         });
       } else {
         this.attributes.push({
           fieldname: `${field}${nullable ? "?" : ""}`,
-          type: type.type + (nullable ? " | null" : ""),
+          type: type.type + (nullable ? " | undefined" : ""),
         });
 
         this.getter.push({
           fieldname: field,
           type: `${type.type}${nullable ? " | undefined" : ""}`,
-          returnType: `super.get("${field}");`,
+          returnType: `      super.get("${field}");`,
         });
 
         this.setter.push({
           fieldname: field,
           type: `${type.type}${nullable ? " | undefined" : ""}`,
-          action: `super.set("${field}", value);`,
+          action: `      super.set("${field}", value);`,
         });
       }
     }
+  }
+
+  /**
+   * Returns whether the field is nullable.
+   * @param fieldAttributes The attributes of the field
+   * @returns Whether the field is nullable
+   */
+  private getTypescriptFieldNullable(
+    fieldAttributes: SchemaInterface["fields"][0]
+  ) {
+    return fieldAttributes.required || "defaultValue" in fieldAttributes;
   }
 
   /**
