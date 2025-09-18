@@ -48,7 +48,7 @@ export class {{getClassnameWithoutPrefix prefix className}} extends Parse.Object
 {{#each ../setters}}
 {{#ifEquals fieldname ../fieldname}}
   set {{fieldname}}(value: {{{type}}}) {
-{{{action}}}
+    {{{action}}}
   }
 {{/ifEquals}}
 {{/each}}

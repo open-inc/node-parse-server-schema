@@ -258,7 +258,7 @@ export class TypescriptConversion {
         this.getter.push({
           fieldname: field,
           type: type.type,
-          returnType: `      super.relation("${field}");`,
+          returnType: `super.relation("${field}");`,
         });
       } else {
         this.attributes.push({
@@ -269,13 +269,13 @@ export class TypescriptConversion {
         this.getter.push({
           fieldname: field,
           type: `${type.type}${nullable ? " | undefined" : ""}`,
-          returnType: `      super.get("${field}");`,
+          returnType: `super.get("${field}");`,
         });
 
         this.setter.push({
           fieldname: field,
           type: `${type.type}${nullable ? " | undefined" : ""}`,
-          action: `      super.set("${field}", value);`,
+          action: `super.set("${field}", value);`,
         });
       }
     }
