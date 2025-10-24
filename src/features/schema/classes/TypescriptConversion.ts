@@ -289,7 +289,7 @@ export class TypescriptConversion {
   private getTypescriptFieldNullable(
     fieldAttributes: SchemaInterface["fields"][0]
   ) {
-    return fieldAttributes.required || "defaultValue" in fieldAttributes;
+    return !(fieldAttributes.required || "defaultValue" in fieldAttributes);
   }
 
   /**
