@@ -37,6 +37,40 @@ You have two options to connect to parse server.
 1. By providing a json config file
 2. By providing an env with the necessary values set.
 
+`loadConfig(...)` checks provided config in the following order:
+
+1. options.operation === "down" ==> Set Config from process.env ==> return:
+
+```ts
+Config.initialize({
+  publicServerURL: PARSE_SERVER_DOWN_SCHEMA_SERVER_URL,
+  appId: PARSE_SERVER_DOWN_SCHEMA_APPID,
+  masterKey: PARSE_SERVER_DOWN_SCHEMA_MASTERKEY,
+});
+```
+
+2. options.operation === "up" ==> Set Config from process.env ==> return:
+
+```ts
+Config.initialize({
+  publicServerURL: PARSE_SERVER_UP_SCHEMA_SERVER_URL,
+  appId: PARSE_SERVER_UP_SCHEMA_APPID,
+  masterKey: PARSE_SERVER_UP_SCHEMA_MASTERKEY,
+});
+```
+
+3. Check for default process.env variable and use these, then return:
+
+```ts
+Config.initialize({
+  publicServerURL: PARSE_SERVER_URL || PARSE_PUBLIC_SERVER_URL,
+  appId: PARSE_SERVER_APPLICATION_ID,
+  masterKey: PARSE_SERVER_MASTER_KEY,
+});
+```
+
+4. Look for `parse-server.config.json` or provided config path.
+
 ### 1. Config files
 
 By default the config file is expected to be in _./config/parse-server.config.json_
@@ -151,9 +185,12 @@ A GitHub workflow publishes the package automatically to npm.
 import { loadConfig, up, down, typescript } from "@openinc/parse-server-schema";
 
 // load JSON file with config
-await loadConfig("./parse-server-config.json");
+loadConfig("./parse-server-config.json");
 // or load config from process.env
-await loadConfig();
+loadConfig();
+// when using distinct up and down servers
+loadConfig(undefined, { operation: "up" });
+loadConfig(undefined, { operation: "down" });
 
 await up(schemaPath);
 
