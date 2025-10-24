@@ -1,3 +1,11 @@
+## [3.0.6](https://github.com/open-inc/node-parse-server-schema/compare/v3.0.5...v3.0.6) (2025-10-24)
+
+
+### Bug Fixes
+
+* Fixed nullable field check ([5bc537d](https://github.com/open-inc/node-parse-server-schema/commit/5bc537d5492aa57b26532317722bf4d0957447ed))
+* Unify some types ([6b54b98](https://github.com/open-inc/node-parse-server-schema/commit/6b54b98c872c4203964b5e0b83d146c6fd62f824))
+
 ## [3.0.5](https://github.com/open-inc/node-parse-server-schema/compare/v3.0.4...v3.0.5) (2025-09-18)
 
 
