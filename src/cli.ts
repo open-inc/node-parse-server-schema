@@ -2,10 +2,9 @@ import 'dotenv/config';
 
 import pkg from "../package.json" with { type: "json" };
 
-// @ts-ignore
-import { Command } from 'commander';
+import { Command, } from 'commander';
 import { loadConfig, printConfig } from './features/config/index.js';
-import { del, down, typescript, up, type TypescriptConversionOptions } from './features/schema/index.js';
+import { del, down, typescript, up, type CLI_DeleteType, type CLI_DownType, type CLI_UpType, type TypescriptConversionOptions } from './features/schema/index.js';
 
 main().catch((error) => {
   console.error("Error: " + error.message);
@@ -23,8 +22,8 @@ async function main() {
   program
     .command("config")
     .description("Returns the current configuration")
-    .action(async () => {
-      await loadConfig(program.opts().configPath);
+    .action(() => {
+      loadConfig(program.opts().configPath);
 
       printConfig();
     });
@@ -38,8 +37,8 @@ async function main() {
     )
     .option("--ignore <ignore...>", "Class(es) to ignore", "")
     .description("Fetch the schema from Parse Server")
-    .action(async (schemaPath: string, options: { prefix?: string; ignore?: string[]; } | undefined) => {
-      await loadConfig(program.opts().configPath, {
+    .action(async (schemaPath: string, options: CLI_DownType | undefined) => {
+      loadConfig(program.opts().configPath, {
         operation: "down",
       });
 
@@ -57,8 +56,8 @@ async function main() {
     .option("--safe", "This will prevent destructive operations", "")
     .option("--deleteNonEmptyClass", "Delete non-empty classes", false)
     .description("Upload the local schema to Parse Server")
-    .action(async (schemaPath: string, options: { prefix: any; ignore: any; safe: any; deleteNonEmptyClass: any; }) => {
-      await loadConfig(program.opts().configPath, {
+    .action(async (schemaPath: string, options: CLI_UpType) => {
+      loadConfig(program.opts().configPath, {
         operation: "up",
       });
 
@@ -80,8 +79,8 @@ async function main() {
     )
     .option("--deleteNonEmptyClass", "Delete non-empty classes", false)
     .description("Delete the local schema from Parse Server")
-    .action(async (schemaPath: string, options: { prefix?: string; deleteNonEmptyClass?: boolean; } | undefined) => {
-      await loadConfig(program.opts().configPath);
+    .action(async (schemaPath: string, options: CLI_DeleteType | undefined) => {
+      loadConfig(program.opts().configPath);
 
       await del( schemaPath, options);
     });
@@ -100,7 +99,7 @@ async function main() {
     .option("--custom-class-field-types-config <path>", "Path to .json config file for custom class field types")
     .option("--verbose", "Enable verbose logging including dependency graph", false)
     .action(async (typescriptPath: string, options: TypescriptConversionOptions | undefined) => {
-       await loadConfig(program.opts().configPath);
+       loadConfig(program.opts().configPath);
 
       await typescript(typescriptPath, options);
     });

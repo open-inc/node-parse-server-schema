@@ -1,5 +1,10 @@
 import path from "path";
-import { deleteSchema, getLocalSchema, getRemoteSchema } from "../index.js";
+import {
+  deleteSchema,
+  getLocalSchema,
+  getRemoteSchema,
+  type DeleteType,
+} from "../index.js";
 
 /**
  * Deletes the schema from Parse Server.
@@ -9,13 +14,7 @@ import { deleteSchema, getLocalSchema, getRemoteSchema } from "../index.js";
  * @param options.prefix Only classes with the given prefix will be deleted. The prefix will be added to the class names in the local schema.
  * @param options.deleteNonEmptyClass Whether to delete non-empty classes when deleting a class. Default is
  */
-export async function del(
-  schemaPath: string,
-  options: {
-    prefix?: string;
-    deleteNonEmptyClass?: boolean;
-  } = {}
-) {
+export async function del(schemaPath: string, options: DeleteType = {}) {
   const localSchemaPath = schemaPath
     ? path.resolve(schemaPath)
     : path.resolve(".", "schema", "classes");

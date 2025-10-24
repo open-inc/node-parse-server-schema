@@ -6,6 +6,7 @@ import {
   getLocalSchema,
   getRemoteSchema,
   updateSchema,
+  type UpType,
 } from "../index.js";
 
 /**
@@ -19,17 +20,7 @@ import {
  * @param options.deleteFields Whether to delete fields that are not in the local schema. Default is true.
  * @param options.deleteNonEmptyClass Whether to delete non-empty classes when deleting a class. Default is
  */
-export async function up(
-  schemaPath: string,
-  options: {
-    ignore?: string[];
-    prefix?: string;
-    deleteClasses?: boolean;
-    deleteFields?: boolean;
-    deleteNonEmptyClass?: boolean;
-    filter?: (className: string) => boolean;
-  } = {}
-) {
+export async function up(schemaPath: string, options: UpType = {}) {
   const localSchemaPath = schemaPath
     ? path.resolve(schemaPath)
     : path.resolve(".", "schema", "classes");

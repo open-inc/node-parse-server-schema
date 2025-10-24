@@ -20,3 +20,7 @@ export {
   type SetterType,
   type TypescriptConversionOptions,
 } from "./types/TypescriptConversionTypes.js";
+
+export { type CLI_DeleteType, type DeleteType } from "./types/DeleteTypes.js";
+export { type CLI_DownType, type DownType } from "./types/DownTypes.js";
+export { type CLI_UpType, type UpType } from "./types/UpTypes.js";

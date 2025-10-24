@@ -1,7 +1,7 @@
 import fs from "fs";
 import { mkdirp } from "mkdirp";
 import path from "path";
-import { getRemoteSchema } from "../index.js";
+import { getRemoteSchema, type DownType } from "../index.js";
 
 /**
  * Fetches the schema from Parse Server and saves it to a local file or folder.
@@ -11,13 +11,7 @@ import { getRemoteSchema } from "../index.js";
  * @param options.prefix Only classes with the given prefix will be pulled. The prefix will be removed from the class names in the local schema.
  * @param options.ignore Class(es) to ignore. You can use * at the end to ignore all classes that start with the given string.
  */
-export async function down(
-  schemaPath: string,
-  options: {
-    prefix?: string;
-    ignore?: string[];
-  } = {}
-) {
+export async function down(schemaPath: string, options: DownType = {}) {
   let schema = await getRemoteSchema();
 
   const prefix = options.prefix;

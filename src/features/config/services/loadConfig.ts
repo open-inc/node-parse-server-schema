@@ -10,10 +10,10 @@ import type { ConfigInterface } from "../index.js";
  * @param options Options for loading the config.
  * @returns The loaded config.
  */
-export async function loadConfig(
+export function loadConfig(
   configPath?: string,
-  options?: { operation: string }
-): Promise<ConfigInterface> {
+  options?: { operation: "down" | "up" }
+): ConfigInterface {
   const {
     PARSE_SERVER_APPLICATION_ID,
     PARSE_SERVER_MASTER_KEY,
