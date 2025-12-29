@@ -1,3 +1,10 @@
+## [3.0.7](https://github.com/open-inc/node-parse-server-schema/compare/v3.0.6...v3.0.7) (2025-12-29)
+
+
+### Bug Fixes
+
+* Anonymize parse master key in log ([dcb4de4](https://github.com/open-inc/node-parse-server-schema/commit/dcb4de41b69df1a29150328edc69a71aaeab1701))
+
 ## [3.0.6](https://github.com/open-inc/node-parse-server-schema/compare/v3.0.5...v3.0.6) (2025-10-24)
 
 
