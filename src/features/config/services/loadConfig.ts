@@ -40,7 +40,12 @@ export function loadConfig(
         " with APPID: " +
         PARSE_SERVER_DOWN_SCHEMA_APPID +
         " and MASTERKEY: " +
-        PARSE_SERVER_DOWN_SCHEMA_MASTERKEY
+        PARSE_SERVER_DOWN_SCHEMA_MASTERKEY.slice(0, 1) +
+        "****" +
+        PARSE_SERVER_DOWN_SCHEMA_MASTERKEY.slice(
+          PARSE_SERVER_DOWN_SCHEMA_MASTERKEY.length - 1,
+          PARSE_SERVER_DOWN_SCHEMA_MASTERKEY.length
+        )
     );
 
     const configData = {
@@ -66,7 +71,12 @@ export function loadConfig(
         " with APPID: " +
         PARSE_SERVER_UP_SCHEMA_APPID +
         " and MASTERKEY: " +
-        PARSE_SERVER_UP_SCHEMA_MASTERKEY
+        PARSE_SERVER_UP_SCHEMA_MASTERKEY.slice(0, 1) +
+        "****" +
+        PARSE_SERVER_UP_SCHEMA_MASTERKEY.slice(
+          PARSE_SERVER_UP_SCHEMA_MASTERKEY.length - 1,
+          PARSE_SERVER_UP_SCHEMA_MASTERKEY.length
+        )
     );
 
     const configData = {
@@ -88,7 +98,12 @@ export function loadConfig(
         " with APPID: " +
         PARSE_SERVER_APPLICATION_ID +
         " and MASTERKEY: " +
-        PARSE_SERVER_MASTER_KEY
+        PARSE_SERVER_MASTER_KEY.slice(0, 1) +
+        "****" +
+        PARSE_SERVER_MASTER_KEY.slice(
+          PARSE_SERVER_MASTER_KEY.length - 1,
+          PARSE_SERVER_MASTER_KEY.length
+        )
     );
 
     const configData = {
