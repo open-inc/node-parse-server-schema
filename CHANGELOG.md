@@ -1,3 +1,15 @@
+# [4.0.0](https://github.com/open-inc/node-parse-server-schema/compare/v3.0.7...v4.0.0) (2026-01-26)
+
+
+### Bug Fixes
+
+* Add import-parse-statement ([7f19568](https://github.com/open-inc/node-parse-server-schema/commit/7f195688f4067cac7227344276730b0caf7d363a))
+
+
+### BREAKING CHANGES
+
+* Current --global-sdk option is removed!You can control the import manually.
+
 ## [3.0.7](https://github.com/open-inc/node-parse-server-schema/compare/v3.0.6...v3.0.7) (2025-12-29)
 
 
