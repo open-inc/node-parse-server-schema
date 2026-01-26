@@ -1,10 +1,19 @@
-import 'dotenv/config';
+import "dotenv/config";
 
 import pkg from "../package.json" with { type: "json" };
 
-import { Command, } from 'commander';
-import { loadConfig, printConfig } from './features/config/index.js';
-import { del, down, typescript, up, type CLI_DeleteType, type CLI_DownType, type CLI_UpType, type TypescriptConversionOptions } from './features/schema/index.js';
+import { Command } from "commander";
+import { loadConfig, printConfig } from "./features/config/index.js";
+import {
+  del,
+  down,
+  typescript,
+  up,
+  type CLI_DeleteType,
+  type CLI_DownType,
+  type CLI_UpType,
+  type TypescriptConversionOptions,
+} from "./features/schema/index.js";
 
 main().catch((error) => {
   console.error("Error: " + error.message);
@@ -16,8 +25,7 @@ async function main() {
 
   program.version(pkg.version);
 
-  program
-    .option("--configPath <path>", "Path to .js(on) config file");
+  program.option("--configPath <path>", "Path to .js(on) config file");
 
   program
     .command("config")
@@ -33,7 +41,7 @@ async function main() {
     .option(
       "--prefix <prefix>",
       "Only classes with the given prefix will be pulled",
-      ""
+      "",
     )
     .option("--ignore <ignore...>", "Class(es) to ignore", "")
     .description("Fetch the schema from Parse Server")
@@ -42,7 +50,7 @@ async function main() {
         operation: "down",
       });
 
-      await down( schemaPath, options);
+      await down(schemaPath, options);
     });
 
   program
@@ -50,7 +58,7 @@ async function main() {
     .option(
       "--prefix <prefix>",
       "Only classes with the given prefix will be pushed or removed",
-      ""
+      "",
     )
     .option("--ignore <ignore...>", "Class(es) to ignore", "")
     .option("--safe", "This will prevent destructive operations", "")
@@ -61,7 +69,7 @@ async function main() {
         operation: "up",
       });
 
-      await up( schemaPath, {
+      await up(schemaPath, {
         prefix: options.prefix,
         ignore: options.ignore,
         deleteClasses: !options.safe,
@@ -75,14 +83,14 @@ async function main() {
     .option(
       "--prefix <prefix>",
       "Only classes with the given prefix will be deleted",
-      ""
+      "",
     )
     .option("--deleteNonEmptyClass", "Delete non-empty classes", false)
     .description("Delete the local schema from Parse Server")
     .action(async (schemaPath: string, options: CLI_DeleteType | undefined) => {
       loadConfig(program.opts().configPath);
 
-      await del( schemaPath, options);
+      await del(schemaPath, options);
     });
 
   program
@@ -90,19 +98,43 @@ async function main() {
     .description("Transform the local schema to Typescript definitions")
     .option("--prefix <prefix>", "Prefix will be stripped from class names", "")
     .option("--ignore <ignore...>", "Class(es) to ignore", "")
-    .option("--include <include...>", "Class(es) to include (overrides --ignore)", "")
+    .option(
+      "--include <include...>",
+      "Class(es) to include (overrides --ignore)",
+      "",
+    )
     .option("--no-class", "Don't create and register custom Parse.Object")
     .option("--no-sdk", "Don't use Parse JS SDK, just TS without dependencies")
-    .option("--global-sdk", "Use a global Parse JS SDK", false)
+    .option(
+      "--import-parse-statement <statement>",
+      "Custom import statement for Parse (e.g., 'import Parse from \"parse/node.js\"')",
+      "",
+    )
     .option("--is-esm", "Use ES module imports in generated files.", false)
-    .option("--resolve-referenced-classes", "Generate all referenced classes, even if they are not in the fetched schema.", false)
-    .option("--custom-class-field-types-config <path>", "Path to .json config file for custom class field types")
-    .option("--verbose", "Enable verbose logging including dependency graph", false)
-    .action(async (typescriptPath: string, options: TypescriptConversionOptions | undefined) => {
-       loadConfig(program.opts().configPath);
+    .option(
+      "--resolve-referenced-classes",
+      "Generate all referenced classes, even if they are not in the fetched schema.",
+      false,
+    )
+    .option(
+      "--custom-class-field-types-config <path>",
+      "Path to .json config file for custom class field types",
+    )
+    .option(
+      "--verbose",
+      "Enable verbose logging including dependency graph",
+      false,
+    )
+    .action(
+      async (
+        typescriptPath: string,
+        options: TypescriptConversionOptions | undefined,
+      ) => {
+        loadConfig(program.opts().configPath);
 
-      await typescript(typescriptPath, options);
-    });
+        await typescript(typescriptPath, options);
+      },
+    );
 
   await program.parseAsync(process.argv);
 }

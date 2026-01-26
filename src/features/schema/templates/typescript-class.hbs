@@ -1,4 +1,4 @@
-{{#if sdk}}{{#unless globalSdk}}import Parse from "parse";{{/unless}}{{/if}}
+{{#if importParseStatement}}{{{importParseStatement}}}{{/if}}
 {{#if importDependencies.length}}
 
 {{#each importDependencies}}

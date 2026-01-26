@@ -23,7 +23,7 @@ export class TypescriptConversion {
   public prefix = "";
   public ignoreFields = ["id", "objectId", "createdAt", "updatedAt"];
   public sdk = true;
-  public globalSdk = false;
+  public importParseStatement = "";
   public isEsm = false;
   public isClass = false;
   public resolveReferencedClasses = false;
@@ -58,8 +58,8 @@ export class TypescriptConversion {
   constructor(options: TypescriptConversionOptions, className: string) {
     console.log(
       `   ⚙️  Initializing TypeScript conversion with options: ${JSON.stringify(
-        options
-      )}`
+        options,
+      )}`,
     );
     this.prefix = options.prefix || "";
     this.ignoreFields = options.ignore || [
@@ -69,14 +69,14 @@ export class TypescriptConversion {
       "updatedAt",
     ];
     this.sdk = options.sdk ?? true;
-    this.globalSdk = options.globalSdk ?? false;
+    this.importParseStatement = options.importParseStatement ?? "";
     this.isEsm = options.isEsm ?? false;
     this.isClass = options.class ?? false;
     this.resolveReferencedClasses = options.resolveReferencedClasses ?? false;
 
     if (options.customClassFieldTypesConfig) {
       this.customClassFieldTypes = loadCustomClassFieldConfig(
-        options.customClassFieldTypesConfig
+        options.customClassFieldTypesConfig,
       );
     }
 
@@ -108,34 +108,34 @@ export class TypescriptConversion {
       "getClassnameWithoutPrefix",
       (prefix: string, className: string) => {
         return getClassnameWithoutPrefix(prefix, className);
-      }
+      },
     );
 
     Handlebars.registerHelper(
       "ifEquals",
       function (this: any, arg1: string, arg2: string, options: any) {
         return arg1 === arg2 ? options.fn(this) : options.inverse(this);
-      }
+      },
     );
 
     Handlebars.registerHelper(
       "startsWith",
       function (str: string, prefix: string) {
         return str.startsWith(prefix);
-      }
+      },
     );
 
     // Load templates from src directory (since .hbs files aren't copied to dist)
     const templatePath = path.resolve(
       __dirname,
-      "../../../../src/features/schema/templates/typescript-class.hbs"
+      "../../../../src/features/schema/templates/typescript-class.hbs",
     );
     const templateSource = fs.readFileSync(templatePath, "utf-8");
     TypescriptConversion.template = Handlebars.compile(templateSource);
 
     const indexTemplatePath = path.resolve(
       __dirname,
-      "../../../../src/features/schema/templates/typescript-index.hbs"
+      "../../../../src/features/schema/templates/typescript-index.hbs",
     );
     const indexTemplateSource = fs.readFileSync(indexTemplatePath, "utf-8");
     TypescriptConversion.indexTemplate =
@@ -152,9 +152,9 @@ export class TypescriptConversion {
     fs.writeFileSync(
       path.resolve(
         tsPath,
-        getClassnameWithoutPrefix(this.prefix, this.className) + ".ts"
+        getClassnameWithoutPrefix(this.prefix, this.className) + ".ts",
       ),
-      this.generateFromTemplate()
+      this.generateFromTemplate(),
     );
   }
 
@@ -166,7 +166,7 @@ export class TypescriptConversion {
       className: this.className,
       prefix: this.prefix,
       sdk: this.sdk,
-      globalSdk: this.globalSdk,
+      importParseStatement: this.importParseStatement,
       isEsm: this.isEsm,
       isClass: this.isClass,
       attributes: this.attributes,
@@ -185,7 +185,7 @@ export class TypescriptConversion {
    */
   public static generateIndexFromTemplate(
     classNames: string[],
-    options: TypescriptConversionOptions
+    options: TypescriptConversionOptions,
   ): string {
     // Ensure template is initialized
     if (!TypescriptConversion.templateInitialized) {
@@ -209,7 +209,7 @@ export class TypescriptConversion {
    */
   public createGetterAndSetter(
     fieldEntries: FieldEntryType[],
-    schema: SchemaInterface[]
+    schema: SchemaInterface[],
   ) {
     for (const [field, fieldAttributes] of fieldEntries) {
       // Check if targetClass is set and not equal to the current className
@@ -244,7 +244,7 @@ export class TypescriptConversion {
       console.log(
         `     🔤 Field ${field}: ${type.type}${
           type.importfrom ? ` (imported from ${type.importfrom})` : ""
-        }`
+        }`,
       );
 
       //Check if type.importfrom is set and if so, add it to the importDependencies
@@ -287,7 +287,7 @@ export class TypescriptConversion {
    * @returns Whether the field is nullable
    */
   private getTypescriptFieldNullable(
-    fieldAttributes: SchemaInterface["fields"][0]
+    fieldAttributes: SchemaInterface["fields"][0],
   ) {
     return !(fieldAttributes.required || "defaultValue" in fieldAttributes);
   }
@@ -296,7 +296,7 @@ export class TypescriptConversion {
    * Returns custom type and importfrom if defined in config for a class/field.
    */
   private getCustomFieldType(
-    fieldName: string
+    fieldName: string,
   ): CustomClassFieldReturnType | undefined {
     if (!this.customClassFieldTypes) return undefined;
 
@@ -334,7 +334,7 @@ export class TypescriptConversion {
    */
   private getTypescriptFieldType(
     fieldName: string,
-    fieldAttributes: SchemaInterface["fields"][0]
+    fieldAttributes: SchemaInterface["fields"][0],
   ): { type: string; importfrom?: string } {
     if (this.customClassFieldTypes.length > 0 && fieldName && this.className) {
       // Check for custom field types
@@ -394,7 +394,7 @@ export class TypescriptConversion {
       case "Pointer": {
         const pointerTarget = getClassnameWithoutPrefix(
           this.prefix,
-          fieldAttributes.targetClass
+          fieldAttributes.targetClass,
         );
 
         if (this.sdk) {
@@ -409,14 +409,14 @@ export class TypescriptConversion {
       case "Relation": {
         const relationTarget = getClassnameWithoutPrefix(
           this.prefix,
-          fieldAttributes.targetClass
+          fieldAttributes.targetClass,
         );
 
         if (this.sdk) {
           return {
             type: `Parse.Relation<${getClassnameWithoutPrefix(
               this.prefix,
-              this.className
+              this.className,
             )}, ${relationTarget}>`,
           };
         } else {
@@ -429,8 +429,8 @@ export class TypescriptConversion {
       default:
         throw new Error(
           `Parse type '${JSON.stringify(
-            fieldAttributes
-          )}' not implemented for typescript conversation.`
+            fieldAttributes,
+          )}' not implemented for typescript conversation.`,
         );
     }
   }

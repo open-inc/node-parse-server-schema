@@ -18,7 +18,7 @@ import {
  * @param options.prefix Only classes with the given prefix will be generated. The prefix will be removed from the class names in the local schema.
  * @param options.ignore Class(es) to ignore. You can use * at the end to ignore all classes that start with the given string.
  * @param options.sdk Whether to generate classes that extend Parse.Object. Default is true.
- * @param options.globalSdk Whether to import Parse from "parse" or assume it's globally available. Default is false.
+ * @param options.importParseStatement Custom import statement for Parse (e.g., 'import Parse from "parse/node.js"'). If empty, no import is added.
  * @param options.class Whether to create and register custom Parse.Object classes. Default is false.
  * @param options.isEsm Whether to generate ESM imports/exports. Default is false (CommonJS).
  */
@@ -29,13 +29,13 @@ export async function typescript(
     ignore: [],
     include: [],
     sdk: true,
-    globalSdk: false,
+    importParseStatement: "",
     class: false,
     isEsm: false,
-  }
+  },
 ) {
   options.sdk ??= true;
-  options.globalSdk ??= false;
+  options.importParseStatement ??= "";
   options.class ??= false;
 
   let schema = await getRemoteSchema();
@@ -47,7 +47,7 @@ export async function typescript(
   if (options.prefix) {
     schema = schema.filter(
       (s) =>
-        s.className.startsWith(options.prefix!) || s.className.startsWith("_")
+        s.className.startsWith(options.prefix!) || s.className.startsWith("_"),
     );
   }
 
@@ -124,7 +124,7 @@ export async function typescript(
       tsPath,
       processedClasses,
       allFetchedSchema,
-      conversions
+      conversions,
     );
   }
 
@@ -134,7 +134,7 @@ export async function typescript(
     conversions,
     allSchemaForResolution,
     tsPath,
-    options.verbose
+    options.verbose,
   );
 
   // Write the index.ts file that exports all classes using Handlebars template
@@ -149,9 +149,31 @@ export async function typescript(
 
   const indexContent = TypescriptConversion.generateIndexFromTemplate(
     uniqueClassNames,
-    options
+    options,
   );
   fs.writeFileSync(path.resolve(tsPath, "index.ts"), indexContent);
+
+  // Beautify generated files (optional, requires prettier to be installed)
+  try {
+    const prettier = await import("prettier");
+    console.log("🎨 Beautifying generated files with Prettier...");
+    const prettierConfig = await prettier.resolveConfig("/");
+    for await (const file of fs.readdirSync(tsPath)) {
+      if (file.endsWith(".ts")) {
+        const filePath = path.resolve(tsPath, file);
+        const fileContent = fs.readFileSync(filePath, "utf-8");
+        const formatted = await prettier.format(fileContent, {
+          ...prettierConfig,
+          filepath: filePath,
+        });
+        fs.writeFileSync(filePath, formatted, "utf-8");
+      }
+    }
+  } catch (error) {
+    console.warn(
+      "⚠️ Prettier not found or failed to format files. Skipping beautification.",
+    );
+  }
 
   // Final summary
   console.log(`\n✅ TypeScript generation completed successfully!`);

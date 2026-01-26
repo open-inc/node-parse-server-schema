@@ -63,7 +63,7 @@ export type FieldEntryType = [
   ) & {
     required?: boolean | undefined;
     defaultValue?: any;
-  }
+  },
 ];
 
 export type TypescriptConversionOptions = {
@@ -71,7 +71,7 @@ export type TypescriptConversionOptions = {
   ignore?: string[];
   include?: string[];
   sdk?: boolean; // "default" | "node" | "global" | "none";
-  globalSdk?: boolean;
+  importParseStatement?: string;
   class?: boolean;
   isEsm?: boolean;
   customClassFieldTypesConfig?: string;
