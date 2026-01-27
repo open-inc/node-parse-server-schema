@@ -133,18 +133,18 @@ The file has to be an array of form `classname` --> `fields` --> `[key: fieldnam
 
 The `typescript` command supports the following options:
 
-| Option                                     | Type     | Default | Description                                                                                                                                      |
-| ------------------------------------------ | -------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `--prefix <prefix>`                        | string   | `""`    | Prefix will be stripped from class names in generated TypeScript files                                                                           |
-| `--ignore <ignore...>`                     | string[] | `[]`    | Class name(s) to ignore during generation. Supports wildcards: `Prefix*` (starts with) or `*Suffix` (ends with). Can be specified multiple times |
-| `--include <include...>`                   | string[] | `[]`    | Class name(s) to include (overrides --ignore). Supports wildcards with `*`. Can be specified multiple times                                      |
-| `--no-class`                               | boolean  | `false` | Don't create and register custom Parse.Object classes (generates type definitions only)                                                          |
-| `--no-sdk`                                 | boolean  | `false` | Don't use Parse JS SDK dependencies, generates plain TypeScript types only                                                                       |
-| `--global-sdk`                             | boolean  | `false` | Assume Parse JS SDK is globally available (doesn't import Parse)                                                                                 |
-| `--is-esm`                                 | boolean  | `false` | Use ES module imports/exports with `.js` extensions in generated files                                                                           |
-| `--resolve-referenced-classes`             | boolean  | `false` | Generate TypeScript files for all referenced classes, even if they're not in the initial schema (enables recursive dependency resolution)        |
-| `--custom-class-field-types-config <path>` | string   | -       | Path to JSON config file for custom class field type mappings                                                                                    |
-| `--verbose`                                | boolean  | `false` | Enable verbose logging including dependency validation and dependency graph visualization                                                        |
+| Option                                     | Type     | Default | Description                                                                                                                                                               |
+| ------------------------------------------ | -------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--prefix <prefix>`                        | string   | `""`    | Prefix will be stripped from class names in generated TypeScript files                                                                                                    |
+| `--ignore <ignore...>`                     | string[] | `[]`    | Class name(s) to ignore during generation. Supports wildcards: `Prefix*` (starts with) or `*Suffix` (ends with). Can be specified multiple times                          |
+| `--include <include...>`                   | string[] | `[]`    | Class name(s) to include (overrides --ignore). Supports wildcards with `*`. Can be specified multiple times                                                               |
+| `--no-class`                               | boolean  | `false` | Don't create and register custom Parse.Object classes (generates type definitions only)                                                                                   |
+| `--no-sdk`                                 | boolean  | `false` | Don't use Parse JS SDK dependencies, generates plain TypeScript types only                                                                                                |
+| `--import-parse-statement <statement>`     | string   | `""`    | Control the import on top of generated files by yourself. E.g. `import Parse from "parse";` when using Parse JS SDK or `""` when Parse is globally available (on server). |
+| `--is-esm`                                 | boolean  | `false` | Use ES module imports/exports with `.js` extensions in generated files                                                                                                    |
+| `--resolve-referenced-classes`             | boolean  | `false` | Generate TypeScript files for all referenced classes, even if they're not in the initial schema (enables recursive dependency resolution)                                 |
+| `--custom-class-field-types-config <path>` | string   | -       | Path to JSON config file for custom class field type mappings                                                                                                             |
+| `--verbose`                                | boolean  | `false` | Enable verbose logging including dependency validation and dependency graph visualization                                                                                 |
 
 **Examples:**
 
@@ -157,6 +157,8 @@ parse-server-schema typescript ./types --is-esm --resolve-referenced-classes
 
 # Generate type definitions only (no Parse.Object classes)
 parse-server-schema typescript ./types --no-class --no-sdk
+
+parse-server-schema typescript ./types --prefix XXX_ --import-parse-statement 'import Parse from "parse";'
 
 # Ignore specific classes and use custom field types
 parse-server-schema typescript ./types --ignore "_Session" "TempClass*" --custom-class-field-types-config ./custom-types.json
