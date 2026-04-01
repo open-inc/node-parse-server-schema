@@ -1,3 +1,10 @@
+## [4.0.1](https://github.com/open-inc/node-parse-server-schema/compare/v4.0.0...v4.0.1) (2026-04-01)
+
+
+### Bug Fixes
+
+* Update packages due to CVE ([fa594f4](https://github.com/open-inc/node-parse-server-schema/commit/fa594f4af873f7a73ff79730695d0f44cd5e7d52))
+
 # [4.0.0](https://github.com/open-inc/node-parse-server-schema/compare/v3.0.7...v4.0.0) (2026-01-26)
 
 
