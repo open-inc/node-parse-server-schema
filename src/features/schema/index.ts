@@ -5,6 +5,7 @@ export * from "./helper/typescriptHelpers.js";
 // Services
 export { del } from "./services/del.js";
 export { down } from "./services/down.js";
+export { draw } from "./services/draw.js";
 export { typescript } from "./services/typescript.js";
 export { up } from "./services/up.js";
 
@@ -23,4 +24,9 @@ export {
 
 export { type CLI_DeleteType, type DeleteType } from "./types/DeleteTypes.js";
 export { type CLI_DownType, type DownType } from "./types/DownTypes.js";
+export {
+  type CLI_DrawType,
+  type DrawFormat,
+  type DrawOptions,
+} from "./types/DrawTypes.js";
 export { type CLI_UpType, type UpType } from "./types/UpTypes.js";

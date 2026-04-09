@@ -1,0 +1,236 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Parse Server Schema Diagram</title>
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      :root {
+        --bg: #05070f;
+        --bg-accent-a: #0f172a;
+        --bg-accent-b: #0b2239;
+        --panel: #0b1220;
+        --panel-top: #111827;
+        --toolbar-text: #e2e8f0;
+        --muted: #94a3b8;
+        --border: #243244;
+        --accent: #38bdf8;
+        --accent-2: #22d3ee;
+        --shadow: 0 24px 60px rgba(2, 6, 23, 0.55);
+      }
+      body {
+        font-family: "Segoe UI", Arial, sans-serif;
+        background:
+          radial-gradient(
+            circle at 12% 8%,
+            rgba(56, 189, 248, 0.2),
+            transparent 34%
+          ),
+          radial-gradient(
+            circle at 88% 10%,
+            rgba(34, 211, 238, 0.16),
+            transparent 36%
+          ),
+          radial-gradient(
+            circle at 50% 120%,
+            rgba(59, 130, 246, 0.14),
+            transparent 46%
+          ),
+          var(--bg);
+        color: var(--toolbar-text);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+      header {
+        background: linear-gradient(
+          180deg,
+          rgba(8, 12, 24, 0.96),
+          rgba(8, 12, 24, 0.82)
+        );
+        backdrop-filter: blur(12px);
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid rgba(56, 189, 248, 0.22);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+      }
+      header h1 {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #f8fafc;
+      }
+      header span {
+        font-size: 0.85rem;
+        color: var(--muted);
+      }
+      .controls {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      .controls button {
+        appearance: none;
+        border: 1px solid rgba(56, 189, 248, 0.28);
+        background: rgba(15, 23, 42, 0.86);
+        color: var(--toolbar-text);
+        border-radius: 999px;
+        min-width: 2.4rem;
+        height: 2.4rem;
+        padding: 0 0.9rem;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition:
+          border-color 0.2s ease,
+          transform 0.2s ease,
+          background-color 0.2s ease;
+      }
+      .controls button:hover {
+        border-color: rgba(56, 189, 248, 0.9);
+        background: rgba(14, 38, 66, 0.92);
+        color: white;
+        transform: translateY(-1px);
+      }
+      .controls output {
+        min-width: 6rem;
+        text-align: center;
+        font-size: 1rem;
+        color: #7dd3fc;
+      }
+      #viewport {
+        flex: 1;
+        position: relative;
+        overflow: auto;
+        padding: 1.5rem;
+      }
+      #canvas {
+        transform-origin: 0 0;
+        display: inline-block;
+        user-select: none;
+        cursor: grab;
+      }
+      #canvas.is-dragging {
+        cursor: grabbing;
+      }
+      #graph {
+        display: inline-block;
+        background: linear-gradient(180deg, var(--panel-top), var(--panel));
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: var(--shadow);
+      }
+      #graph svg {
+        display: block;
+        max-width: none !important;
+        height: auto !important;
+      }
+      #graph svg text,
+      #graph svg tspan,
+      #graph svg foreignObject {
+        font-size: 22px;
+      }
+      .hint {
+        position: absolute;
+        right: 1.25rem;
+        bottom: 1.25rem;
+        background: rgba(8, 12, 24, 0.84);
+        color: var(--muted);
+        padding: 0.7rem 0.9rem;
+        border-radius: 12px;
+        font-size: 0.82rem;
+        border: 1px solid rgba(56, 189, 248, 0.24);
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div>
+        <h1>Parse Server Schema</h1>
+        <span>Large diagrams are easier to inspect here than in raw Mermaid
+          preview.</span>
+      </div>
+      <div class="controls">
+        <button id="zoom-out" type="button" aria-label="Zoom out">-</button>
+        <output id="zoom-value">100%</output>
+        <button id="zoom-in" type="button" aria-label="Zoom in">+</button>
+        <button id="fit-view" type="button">Fit</button>
+        <button id="reset-view" type="button">Reset</button>
+      </div>
+    </header>
+    <div id="viewport">
+      <div id="canvas">
+        <div id="graph"></div>
+      </div>
+      <div class="hint">Mouse wheel to zoom. Drag to pan.</div>
+    </div>
+    <script type="module">
+      import mermaid from
+      "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+      mermaid.initialize({ startOnLoad: false, theme: "base" }); const diagram =
+      {{{diagramJson}}}; const { svg } = await mermaid.render("schema-svg",
+      diagram); document.getElementById("graph").innerHTML = svg; const viewport
+      = document.getElementById("viewport"); const canvas =
+      document.getElementById("canvas"); const graph =
+      document.getElementById("graph"); const zoomValue =
+      document.getElementById("zoom-value"); const zoomIn =
+      document.getElementById("zoom-in"); const zoomOut =
+      document.getElementById("zoom-out"); const fitView =
+      document.getElementById("fit-view"); const resetView =
+      document.getElementById("reset-view"); let scale = 2; let panX = 32; let
+      panY = 32; let dragging = false; let startX = 0; let startY = 0; function
+      renderTransform() { canvas.style.transform = "translate(" + panX + "px, "
+      + panY + "px) scale(" + scale + ")"; zoomValue.value = Math.round(scale *
+      100) + "%"; } function setScale(nextScale, clientX, clientY) { const
+      clamped = Math.min(10, Math.max(0.2, nextScale)); const rect =
+      viewport.getBoundingClientRect(); const anchorX = clientX ?? rect.left +
+      rect.width / 2; const anchorY = clientY ?? rect.top + rect.height / 2;
+      const offsetX = anchorX - rect.left; const offsetY = anchorY - rect.top;
+      panX = offsetX - ((offsetX - panX) / scale) * clamped; panY = offsetY -
+      ((offsetY - panY) / scale) * clamped; scale = clamped; renderTransform();
+      } function getDiagramSize() { const svgEl = graph.querySelector("svg"); if
+      (!svgEl) return null; const vb = svgEl.viewBox?.baseVal; if (vb &&
+      vb.width > 0 && vb.height > 0) { return { width: vb.width, height:
+      vb.height }; } const widthAttr =
+      Number.parseFloat(svgEl.getAttribute("width") || ""); const heightAttr =
+      Number.parseFloat(svgEl.getAttribute("height") || ""); if
+      (Number.isFinite(widthAttr) && Number.isFinite(heightAttr)) { return {
+      width: widthAttr, height: heightAttr }; } return { width:
+      graph.scrollWidth, height: graph.scrollHeight, }; } function
+      fitToViewport() { const size = getDiagramSize(); if (!size || !size.width
+      || !size.height) return; const viewportWidth = viewport.clientWidth; const
+      viewportHeight = viewport.clientHeight; const padding = 64; const
+      fitScaleX = (viewportWidth - padding) / size.width; const fitScaleY =
+      (viewportHeight - padding) / size.height; scale = Math.min(10,
+      Math.max(0.2, Math.min(fitScaleX, fitScaleY))); panX = (viewportWidth -
+      size.width * scale) / 2; panY = (viewportHeight - size.height * scale) /
+      2; renderTransform(); } zoomIn.addEventListener("click", () =>
+      setScale(scale * 1.2)); zoomOut.addEventListener("click", () =>
+      setScale(scale / 1.2)); fitView.addEventListener("click", fitToViewport);
+      resetView.addEventListener("click", () => { scale = 2; panX = 32; panY =
+      32; renderTransform(); }); viewport.addEventListener( "wheel", (event) =>
+      { event.preventDefault(); const delta = event.deltaY < 0 ? 1.1 : 0.9;
+      setScale(scale * delta, event.clientX, event.clientY); }, { passive: false
+      } ); canvas.addEventListener("pointerdown", (event) => { dragging = true;
+      startX = event.clientX - panX; startY = event.clientY - panY;
+      canvas.classList.add("is-dragging");
+      canvas.setPointerCapture(event.pointerId); });
+      canvas.addEventListener("pointermove", (event) => { if (!dragging) return;
+      panX = event.clientX - startX; panY = event.clientY - startY;
+      renderTransform(); }); function stopDragging(event) { dragging = false;
+      canvas.classList.remove("is-dragging"); if (event) {
+      canvas.releasePointerCapture(event.pointerId); } }
+      canvas.addEventListener("pointerup", stopDragging);
+      canvas.addEventListener("pointercancel", stopDragging);
+      requestAnimationFrame(fitToViewport); window.addEventListener("resize",
+      fitToViewport);
+    </script>
+  </body>
+</html>

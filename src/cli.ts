@@ -7,10 +7,12 @@ import { loadConfig, printConfig } from "./features/config/index.js";
 import {
   del,
   down,
+  draw,
   typescript,
   up,
   type CLI_DeleteType,
   type CLI_DownType,
+  type CLI_DrawType,
   type CLI_UpType,
   type TypescriptConversionOptions,
 } from "./features/schema/index.js";
@@ -41,7 +43,7 @@ async function main() {
     .option(
       "--prefix <prefix>",
       "Only classes with the given prefix will be pulled",
-      "",
+      ""
     )
     .option("--ignore <ignore...>", "Class(es) to ignore", "")
     .description("Fetch the schema from Parse Server")
@@ -58,7 +60,7 @@ async function main() {
     .option(
       "--prefix <prefix>",
       "Only classes with the given prefix will be pushed or removed",
-      "",
+      ""
     )
     .option("--ignore <ignore...>", "Class(es) to ignore", "")
     .option("--safe", "This will prevent destructive operations", "")
@@ -83,7 +85,7 @@ async function main() {
     .option(
       "--prefix <prefix>",
       "Only classes with the given prefix will be deleted",
-      "",
+      ""
     )
     .option("--deleteNonEmptyClass", "Delete non-empty classes", false)
     .description("Delete the local schema from Parse Server")
@@ -101,40 +103,83 @@ async function main() {
     .option(
       "--include <include...>",
       "Class(es) to include (overrides --ignore)",
-      "",
+      ""
     )
     .option("--no-class", "Don't create and register custom Parse.Object")
     .option("--no-sdk", "Don't use Parse JS SDK, just TS without dependencies")
     .option(
       "--import-parse-statement <statement>",
       "Custom import statement for Parse (e.g., 'import Parse from \"parse/node.js\"')",
-      "",
+      ""
     )
     .option("--is-esm", "Use ES module imports in generated files.", false)
     .option(
       "--resolve-referenced-classes",
       "Generate all referenced classes, even if they are not in the fetched schema.",
-      false,
+      false
     )
     .option(
       "--custom-class-field-types-config <path>",
-      "Path to .json config file for custom class field types",
+      "Path to .json config file for custom class field types"
     )
     .option(
       "--verbose",
       "Enable verbose logging including dependency graph",
-      false,
+      false
     )
     .action(
       async (
         typescriptPath: string,
-        options: TypescriptConversionOptions | undefined,
+        options: TypescriptConversionOptions | undefined
       ) => {
         loadConfig(program.opts().configPath);
 
         await typescript(typescriptPath, options);
-      },
+      }
     );
+
+  program
+    .command("draw <inputPath>")
+    .description(
+      "Generate a UML class diagram from a local schema folder. " +
+        "Accepts a folder with .json files (output of `down`) or " +
+        ".ts files (output of `typescript`), or a single .json file."
+    )
+    .option(
+      "--output <path>",
+      "Output file path (default: schema-diagram.mmd / .md / .html)"
+    )
+    .option(
+      "--format <format>",
+      "Output format: mermaid | markdown | html (default: mermaid)",
+      "mermaid"
+    )
+    .option(
+      "--prefix <prefix>",
+      "Only include classes with the given prefix",
+      ""
+    )
+    .option(
+      "--font-size <px>",
+      "Mermaid font size in pixels for the generated diagram",
+      "44"
+    )
+    .option(
+      "--default-renderer <renderer>",
+      "Class diagram layout engine: dagre-wrapper | dagre-d3 | elk",
+      "elk"
+    )
+    .option("--ignore <ignore...>", "Class(es) to ignore")
+    .action(async (inputPath: string, options: CLI_DrawType) => {
+      await draw(inputPath, {
+        output: options.output,
+        format: options.format,
+        prefix: options.prefix || undefined,
+        ignore: options.ignore,
+        fontSize: Number.parseInt(String(options.fontSize ?? "44"), 10),
+        defaultRenderer: options.defaultRenderer,
+      });
+    });
 
   await program.parseAsync(process.argv);
 }
