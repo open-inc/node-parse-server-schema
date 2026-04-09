@@ -1,3 +1,10 @@
+# [4.1.0](https://github.com/open-inc/node-parse-server-schema/compare/v4.0.1...v4.1.0) (2026-04-09)
+
+
+### Features
+
+* Add draw command ([cdaf76a](https://github.com/open-inc/node-parse-server-schema/commit/cdaf76afc5021267d627b2c8dd20fdf3b2559279))
+
 ## [4.0.1](https://github.com/open-inc/node-parse-server-schema/compare/v4.0.0...v4.0.1) (2026-04-01)
 
 

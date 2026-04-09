@@ -1,6 +1,6 @@
 {
   "name": "@openinc/parse-server-schema",
-  "version": "4.0.1",
+  "version": "4.1.0",
   "description": "Parse Server Schema Manager - Provides functionality to manage Parse Server schemas like converting to typescript interfaces, exporting and importing schemas.",
   "packageManager": "pnpm@10.33.0",
   "type": "module",
