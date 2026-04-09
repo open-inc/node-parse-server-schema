@@ -30,6 +30,52 @@ parse-server-schema down ./path/to/local/schemas --configPath ./path/to/my-parse
 parse-server-schema typescript ./path/to/my/local/types --configPath ./path/to/my-parse-conf.json
 ```
 
+### Generate UML class diagrams from local schema/types
+
+The `draw` command creates a class diagram from local Parse schema files.
+
+Supported input:
+
+- A folder with `.json` schema files (output from `down`)
+- A folder with `.ts` files (output from `typescript`)
+- A single `.json` file containing an array of classes
+
+```bash
+parse-server-schema draw <inputPath>
+```
+
+### CLI options for diagram generation
+
+The `draw` command supports the following options:
+
+| Option                          | Type     | Default   | Description                                                                 |
+| ------------------------------- | -------- | --------- | --------------------------------------------------------------------------- |
+| `--output <path>`               | string   | auto      | Output file path. Defaults to `schema-diagram.mmd/.md/.html` by format      |
+| `--format <format>`             | string   | `mermaid` | Output format: `mermaid`, `markdown`, or `html`                             |
+| `--prefix <prefix>`             | string   | `""`      | Include only classes with this prefix; prefix is stripped in rendered names |
+| `--ignore <ignore...>`          | string[] | `[]`      | Class name(s) to ignore                                                     |
+| `--font-size <px>`              | number   | `44`      | Mermaid font size in pixels                                                 |
+| `--default-renderer <renderer>` | string   | `elk`     | Mermaid class renderer: `dagre-wrapper`, `dagre-d3`, or `elk`               |
+
+### Draw examples
+
+```bash
+# Create Mermaid source
+parse-server-schema draw ./schema --format mermaid
+
+# Create markdown with embedded Mermaid
+parse-server-schema draw ./schema --format markdown --output ./docs/schema.md
+
+# Create interactive HTML viewer
+parse-server-schema draw ./types --format html --output ./schema-diagram.html
+
+# Filter classes by prefix and ignore selected classes
+parse-server-schema draw ./types --prefix OD3_ --ignore _User _Session _Role
+
+# Use a specific Mermaid layout renderer
+parse-server-schema draw ./types --format html --default-renderer dagre-wrapper
+```
+
 ## Configuration
 
 You have two options to connect to parse server.
@@ -184,7 +230,13 @@ A GitHub workflow publishes the package automatically to npm.
 ## Programmatic Usage
 
 ```ts
-import { loadConfig, up, down, typescript } from "@openinc/parse-server-schema";
+import {
+  loadConfig,
+  up,
+  down,
+  typescript,
+  draw,
+} from "@openinc/parse-server-schema";
 
 // load JSON file with config
 loadConfig("./parse-server-config.json");
@@ -199,4 +251,6 @@ await up(schemaPath);
 await down(schemaPath);
 
 await typescript(typescriptPath);
+
+await draw(schemaPath, { format: "html", output: "./schema-diagram.html" });
 ```
