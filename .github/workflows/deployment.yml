@@ -39,7 +39,18 @@ jobs:
 
       - name: Semantic Release 🚀
         id: semantic
-        run: npx semantic-release --branches master
+        uses: cycjimmy/semantic-release-action@v4
+        with:
+          semantic_version: 25
+          branches: master
+          extra_plugins: |
+            @semantic-release/changelog@^6
+            @semantic-release/commit-analyzer@^13
+            @semantic-release/git@^10
+            @semantic-release/github@^12
+            @semantic-release/npm@^13
+            @semantic-release/release-notes-generator@^14
+            semantic-release-export-data@^1
         env:
           GH_TOKEN: ${{ secrets.OPENINC_SEMANTIC_RELEASE }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN_ORG_OPENINC }}
