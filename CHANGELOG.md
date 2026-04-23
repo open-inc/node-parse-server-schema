@@ -1,3 +1,11 @@
+## [4.1.1](https://github.com/open-inc/node-parse-server-schema/compare/v4.1.0...v4.1.1) (2026-04-23)
+
+
+### Bug Fixes
+
+* Removed Semantic Release from Dependencies and use GHA instead ([04cf643](https://github.com/open-inc/node-parse-server-schema/commit/04cf643524469df56f7f7356f8ea3fc159eda061))
+* Updated package-lock ([a41fe61](https://github.com/open-inc/node-parse-server-schema/commit/a41fe61b963a450998ded2ee1d5a04b8f0d2e09c))
+
 # [4.1.0](https://github.com/open-inc/node-parse-server-schema/compare/v4.0.1...v4.1.0) (2026-04-09)
 
 
