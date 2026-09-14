@@ -1,3 +1,10 @@
+## [4.1.2](https://github.com/open-inc/node-parse-server-schema/compare/v4.1.1...v4.1.2) (2026-09-14)
+
+
+### Bug Fixes
+
+* move ts and prerttier to peer / dev in order to prevent the inclusion in node modules of consuming  libs ([d043fff](https://github.com/open-inc/node-parse-server-schema/commit/d043fff5da210854a433b5db93531a29684e6206))
+
 ## [4.1.1](https://github.com/open-inc/node-parse-server-schema/compare/v4.1.0...v4.1.1) (2026-04-23)
 
 
