@@ -1,5 +1,6 @@
 import path from "path";
-import { equals } from "../../../helper.js";
+import { equals, LOG_PREFIX, step } from "../../../helper.js";
+import { Config } from "../../config/index.js";
 import {
   createSchema,
   deleteSchema,
@@ -25,12 +26,27 @@ export async function up(schemaPath: string, options: UpType = {}) {
     ? path.resolve(schemaPath)
     : path.resolve(".", "schema", "classes");
 
-  let localSchema = await getLocalSchema(
-    localSchemaPath,
-    options.prefix || "",
-    options.filter
+  const prefix = options.prefix;
+  const deleteClasses = options.deleteClasses ?? true;
+  const deleteFields = options.deleteFields ?? true;
+  const deleteNonEmptyClass = options.deleteNonEmptyClass ?? false;
+
+  console.log(
+    `${LOG_PREFIX} ⬆️ Uploading schema from ${localSchemaPath} ` +
+      `(prefix: ${prefix || "none"}, deleteClasses: ${deleteClasses}, ` +
+      `deleteFields: ${deleteFields}, deleteNonEmptyClass: ${deleteNonEmptyClass})`
   );
-  let remoteSchema = await getRemoteSchema();
+
+  let localSchema = await step(
+    `read local schema from ${localSchemaPath}`,
+    () => getLocalSchema(localSchemaPath, options.prefix || "", options.filter)
+  );
+
+  const serverURL = Config.getInstance().publicServerURL;
+
+  let remoteSchema = await step(`fetch remote schema from ${serverURL}`, () =>
+    getRemoteSchema()
+  );
 
   if (Array.isArray(options.ignore)) {
     for (let ignore of options.ignore) {
@@ -45,11 +61,6 @@ export async function up(schemaPath: string, options: UpType = {}) {
       }
     }
   }
-
-  const prefix = options.prefix;
-  const deleteClasses = options.deleteClasses ?? true;
-  const deleteFields = options.deleteFields ?? true;
-  const deleteNonEmptyClass = options.deleteNonEmptyClass ?? false;
 
   if (prefix) {
     for (const s of localSchema) {
@@ -68,18 +79,34 @@ export async function up(schemaPath: string, options: UpType = {}) {
     remoteSchema = remoteSchema.filter((s) => s.className.startsWith(prefix));
   }
 
+  console.log(
+    `${LOG_PREFIX} Comparing ${localSchema.length} local against ` +
+      `${remoteSchema.length} remote classes on ${serverURL}`
+  );
+
+  const summary = {
+    created: 0,
+    updated: 0,
+    unchanged: 0,
+    deleted: 0,
+    skippedDeletes: 0,
+  };
+
   // update + create
   for (const local of localSchema) {
     const remote = remoteSchema.find((s) => s.className === local.className);
 
+    if (remote && equals(local, remote)) {
+      summary.unchanged++;
+    }
+
     // update an existing schema
     if (remote && !equals(local, remote)) {
-      console.log(
-        `[@openinc/parse-server-schema] 🔄 Updating schema: ${local.className}`
-      );
-
-      const fieldsToCreate = [];
-      const fieldsToDelete = [];
+      const fieldsToCreate: string[] = [];
+      const fieldsToDelete: string[] = [];
+      const fieldsChanged: string[] = [];
+      const fieldsAdded: string[] = [];
+      const fieldsRemoved: string[] = [];
 
       const clpChanged = !equals(
         local.classLevelPermissions,
@@ -94,33 +121,59 @@ export async function up(schemaPath: string, options: UpType = {}) {
         ) {
           fieldsToDelete.push(field);
           fieldsToCreate.push(field);
+          fieldsChanged.push(field);
         }
 
         if (!remote.fields[field]) {
           fieldsToCreate.push(field);
+          fieldsAdded.push(field);
         }
       }
 
       for (const field of Object.keys(remote.fields)) {
         if (!local.fields[field]) {
           fieldsToDelete.push(field);
+          fieldsRemoved.push(field);
         }
+      }
+
+      const changes = [
+        fieldsAdded.length > 0 && `added: ${fieldsAdded.join(", ")}`,
+        fieldsChanged.length > 0 && `changed: ${fieldsChanged.join(", ")}`,
+        fieldsRemoved.length > 0 && `removed: ${fieldsRemoved.join(", ")}`,
+        clpChanged && "classLevelPermissions changed",
+      ].filter(Boolean);
+
+      console.log(
+        `${LOG_PREFIX} 🔄 Updating schema: ${local.className} (${changes.join("; ")})`
+      );
+
+      for (const field of fieldsChanged) {
+        console.log(
+          `${LOG_PREFIX}    ${local.className}.${field}: ` +
+            `${JSON.stringify(remote.fields[field])} -> ` +
+            `${JSON.stringify(local.fields[field])}`
+        );
       }
 
       // delete schema request
       if (fieldsToDelete.length > 0 || clpChanged) {
         if (deleteFields) {
-          await updateSchema({
-            className: local.className,
-            // @ts-ignore
-            fields: Object.fromEntries(
-              fieldsToDelete.map((field) => [field, { __op: "Delete" }])
-            ),
-            classLevelPermissions: local.classLevelPermissions,
-          });
-        } else {
+          await step(
+            `delete fields of ${local.className} (${fieldsToDelete.join(", ") || "none, classLevelPermissions only"})`,
+            () =>
+              updateSchema({
+                className: local.className,
+                // @ts-ignore
+                fields: Object.fromEntries(
+                  fieldsToDelete.map((field) => [field, { __op: "Delete" }])
+                ),
+                classLevelPermissions: local.classLevelPermissions,
+              })
+          );
+        } else if (fieldsToDelete.length > 0) {
           console.warn(
-            "[@openinc/parse-server-schema] Skip deleting fields: " +
+            `${LOG_PREFIX} Skip deleting fields of ${local.className}: ` +
               fieldsToDelete.join(", ")
           );
 
@@ -129,7 +182,7 @@ export async function up(schemaPath: string, options: UpType = {}) {
 
             if (index >= 0) {
               console.warn(
-                `[@openinc/parse-server-schema] Can't update field: ${fieldName}`
+                `${LOG_PREFIX} Can't update field: ${local.className}.${fieldName}`
               );
 
               fieldsToCreate.splice(index, 1);
@@ -140,25 +193,31 @@ export async function up(schemaPath: string, options: UpType = {}) {
 
       // create schema request
       if (fieldsToCreate.length > 0 || clpChanged) {
-        await updateSchema({
-          className: local.className,
-          fields: Object.fromEntries(
-            fieldsToCreate.map((field) =>
-              [field, local.fields[field]].filter(Boolean)
-            )
-          ),
-          classLevelPermissions: local.classLevelPermissions,
-        });
+        await step(
+          `create fields of ${local.className} (${fieldsToCreate.join(", ") || "none, classLevelPermissions only"})`,
+          () =>
+            updateSchema({
+              className: local.className,
+              fields: Object.fromEntries(
+                fieldsToCreate.map((field) =>
+                  [field, local.fields[field]].filter(Boolean)
+                )
+              ),
+              classLevelPermissions: local.classLevelPermissions,
+            })
+        );
       }
+
+      summary.updated++;
     }
 
     // create a missing schema
     if (!remote) {
-      console.log(
-        `[@openinc/parse-server-schema] ➕ Creating schema: ${local.className}`
-      );
+      console.log(`${LOG_PREFIX} ➕ Creating schema: ${local.className}`);
 
-      await createSchema(local);
+      await step(`create class ${local.className}`, () => createSchema(local));
+
+      summary.created++;
     }
   }
 
@@ -169,18 +228,26 @@ export async function up(schemaPath: string, options: UpType = {}) {
     // delete a missing schema
     if (!local && !equals(local, remote)) {
       if (deleteClasses) {
-        console.log(
-          `[@openinc/parse-server-schema] 🗑️ Deleting schema: ${remote.className}`
+        console.log(`${LOG_PREFIX} 🗑️ Deleting schema: ${remote.className}`);
+
+        await step(`delete class ${remote.className}`, () =>
+          deleteSchema(remote, {
+            options: { deleteNonEmptyClass: deleteNonEmptyClass },
+          })
         );
-        await deleteSchema(remote, {
-          options: { deleteNonEmptyClass: deleteNonEmptyClass },
-        });
+
+        summary.deleted++;
       } else {
-        console.warn(
-          "[@openinc/parse-server-schema] Skip deleting class: " +
-            remote.className
-        );
+        console.warn(`${LOG_PREFIX} Skip deleting class: ${remote.className}`);
+
+        summary.skippedDeletes++;
       }
     }
   }
+
+  console.log(
+    `${LOG_PREFIX} ✅ Schema upload finished: ${summary.created} created, ` +
+      `${summary.updated} updated, ${summary.unchanged} unchanged, ` +
+      `${summary.deleted} deleted, ${summary.skippedDeletes} deletes skipped`
+  );
 }

@@ -1,4 +1,6 @@
 import path from "path";
+import { LOG_PREFIX, step } from "../../../helper.js";
+import { Config } from "../../config/index.js";
 import {
   deleteSchema,
   getLocalSchema,
@@ -19,10 +21,23 @@ export async function del(schemaPath: string, options: DeleteType = {}) {
     ? path.resolve(schemaPath)
     : path.resolve(".", "schema", "classes");
 
-  let localSchema = await getLocalSchema(localSchemaPath);
-  let remoteSchema = await getRemoteSchema();
-
   const prefix = options.prefix;
+
+  console.log(
+    `${LOG_PREFIX} 🗑️ Deleting classes of ${localSchemaPath} ` +
+      `(prefix: ${prefix || "none"}, deleteNonEmptyClass: ${!!options.deleteNonEmptyClass})`
+  );
+
+  let localSchema = await step(
+    `read local schema from ${localSchemaPath}`,
+    () => getLocalSchema(localSchemaPath)
+  );
+
+  const serverURL = Config.getInstance().publicServerURL;
+
+  let remoteSchema = await step(`fetch remote schema from ${serverURL}`, () =>
+    getRemoteSchema()
+  );
 
   if (prefix) {
     for (const s of localSchema) {
@@ -32,17 +47,32 @@ export async function del(schemaPath: string, options: DeleteType = {}) {
     remoteSchema = remoteSchema.filter((s) => s.className.startsWith(prefix));
   }
 
+  console.log(
+    `${LOG_PREFIX} Comparing ${localSchema.length} local against ` +
+      `${remoteSchema.length} remote classes on ${serverURL}`
+  );
+
+  let deleted = 0;
+
   // delete
   for (const local of localSchema) {
     const remote = remoteSchema.find((s) => s.className === local.className);
 
     if (remote) {
-      console.log(
-        `[@openinc/parse-server-schema] 🗑️ Deleting schema: ${local.className}`
+      console.log(`${LOG_PREFIX} 🗑️ Deleting schema: ${local.className}`);
+
+      await step(`delete class ${local.className}`, () =>
+        deleteSchema(local, {
+          options: { deleteNonEmptyClass: options.deleteNonEmptyClass },
+        })
       );
-      await deleteSchema(local, {
-        options: { deleteNonEmptyClass: options.deleteNonEmptyClass },
-      });
+
+      deleted++;
     }
   }
+
+  console.log(
+    `${LOG_PREFIX} ✅ Schema delete finished: ${deleted} deleted, ` +
+      `${localSchema.length - deleted} not on server`
+  );
 }

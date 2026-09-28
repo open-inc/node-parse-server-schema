@@ -3,6 +3,7 @@ import Handlebars from "handlebars";
 import { mkdirp } from "mkdirp";
 import path from "path";
 import { fileURLToPath } from "url";
+import { LOG_PREFIX } from "../../../helper.js";
 import { getLocalSchema, type SchemaInterface } from "../index.js";
 import type { DrawOptions, DrawRenderer } from "../types/DrawTypes.js";
 
@@ -23,6 +24,11 @@ export async function draw(inputPath: string, options: DrawOptions = {}) {
   if (!fs.existsSync(resolvedInput)) {
     throw new Error(`Path does not exist: ${resolvedInput}`);
   }
+
+  console.log(
+    `${LOG_PREFIX} 🖼️ Drawing schema from ${resolvedInput} ` +
+      `(prefix: ${options.prefix || "none"}, ignore: ${options.ignore?.join(", ") || "none"})`
+  );
 
   let schema = await loadSchema(resolvedInput);
   const originalClassNames = schema.map((s) => s.className);
@@ -105,7 +111,10 @@ export async function draw(inputPath: string, options: DrawOptions = {}) {
   }
 
   fs.writeFileSync(outputPath, fileContent, "utf-8");
-  console.log(`Schema diagram written to: ${outputPath}`);
+  console.log(
+    `${LOG_PREFIX} ✅ Schema diagram with ${schema.length} of ` +
+      `${originalClassNames.length} classes written to: ${outputPath}`
+  );
 }
 
 // ---------------------------------------------------------------------------

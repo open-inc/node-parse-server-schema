@@ -1,6 +1,8 @@
 import fs from "fs";
 import { mkdirp } from "mkdirp";
 import path from "path";
+import { LOG_PREFIX, step } from "../../../helper.js";
+import { Config } from "../../config/index.js";
 import { getRemoteSchema, type DownType } from "../index.js";
 
 /**
@@ -12,9 +14,19 @@ import { getRemoteSchema, type DownType } from "../index.js";
  * @param options.ignore Class(es) to ignore. You can use * at the end to ignore all classes that start with the given string.
  */
 export async function down(schemaPath: string, options: DownType = {}) {
-  let schema = await getRemoteSchema();
-
   const prefix = options.prefix;
+  const serverURL = Config.getInstance().publicServerURL;
+
+  console.log(
+    `${LOG_PREFIX} ⬇️ Downloading schema from ${serverURL} ` +
+      `(prefix: ${prefix || "none"}, ignore: ${options.ignore?.join(", ") || "none"})`
+  );
+
+  let schema = await step(`fetch remote schema from ${serverURL}`, () =>
+    getRemoteSchema()
+  );
+
+  const remoteCount = schema.length;
 
   if (Array.isArray(options.ignore)) {
     for (let ignore of options.ignore) {
@@ -49,6 +61,11 @@ export async function down(schemaPath: string, options: DownType = {}) {
     ? path.resolve(schemaPath)
     : path.resolve(".", "schema", "classes");
 
+  console.log(
+    `${LOG_PREFIX} Writing ${schema.length} of ${remoteCount} remote classes ` +
+      `to ${localSchemaPath}`
+  );
+
   if (localSchemaPath.endsWith(".json")) {
     await mkdirp(path.dirname(localSchemaPath));
 
@@ -63,4 +80,8 @@ export async function down(schemaPath: string, options: DownType = {}) {
       );
     }
   }
+
+  console.log(
+    `${LOG_PREFIX} ✅ Schema download finished: ${schema.length} classes written`
+  );
 }

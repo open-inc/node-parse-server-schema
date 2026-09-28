@@ -1,6 +1,8 @@
 import fs from "fs";
 import { mkdirp } from "mkdirp";
 import path from "path";
+import { step } from "../../../helper.js";
+import { Config } from "../../config/index.js";
 import { TypescriptConversion } from "../classes/TypescriptConversion.js";
 import {
   getRemoteSchema,
@@ -32,13 +34,19 @@ export async function typescript(
     importParseStatement: "",
     class: false,
     isEsm: false,
-  },
+  }
 ) {
   options.sdk ??= true;
   options.importParseStatement ??= "";
   options.class ??= false;
 
-  let schema = await getRemoteSchema();
+  const serverURL = Config.getInstance().publicServerURL;
+
+  console.log(`🌐 Fetching schema from ${serverURL}...`);
+
+  let schema = await step(`fetch remote schema from ${serverURL}`, () =>
+    getRemoteSchema()
+  );
 
   // Get the full schema for include additions
   const fullSchema = [...schema];
@@ -47,7 +55,7 @@ export async function typescript(
   if (options.prefix) {
     schema = schema.filter(
       (s) =>
-        s.className.startsWith(options.prefix!) || s.className.startsWith("_"),
+        s.className.startsWith(options.prefix!) || s.className.startsWith("_")
     );
   }
 
@@ -109,6 +117,12 @@ export async function typescript(
     ? path.resolve(typescriptPath)
     : path.resolve(".", "schema", "typescript");
 
+  console.log(
+    `📊 Generating ${schema.length} of ${fullSchema.length} remote classes ` +
+      `(prefix: ${options.prefix || "none"}, include: ${options.include?.join(", ") || "none"}, ` +
+      `ignore: ${options.ignore?.join(", ") || "none"})`
+  );
+
   await mkdirp(tsPath);
 
   const processedClasses = new Set<string>();
@@ -124,7 +138,7 @@ export async function typescript(
       tsPath,
       processedClasses,
       allFetchedSchema,
-      conversions,
+      conversions
     );
   }
 
@@ -134,7 +148,7 @@ export async function typescript(
     conversions,
     allSchemaForResolution,
     tsPath,
-    options.verbose,
+    options.verbose
   );
 
   // Write the index.ts file that exports all classes using Handlebars template
@@ -149,7 +163,7 @@ export async function typescript(
 
   const indexContent = TypescriptConversion.generateIndexFromTemplate(
     uniqueClassNames,
-    options,
+    options
   );
   fs.writeFileSync(path.resolve(tsPath, "index.ts"), indexContent);
 
@@ -171,8 +185,9 @@ export async function typescript(
     }
   } catch (error) {
     console.warn(
-      "⚠️ Prettier not found or failed to format files. Skipping beautification.",
+      "⚠️ Prettier not found or failed to format files. Skipping beautification."
     );
+    console.warn(`   ${error instanceof Error ? error.message : error}`);
   }
 
   // Final summary
