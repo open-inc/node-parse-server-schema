@@ -1,3 +1,10 @@
+## [4.1.5](https://github.com/open-inc/node-parse-server-schema/compare/v4.1.4...v4.1.5) (2026-09-28)
+
+
+### Bug Fixes
+
+* Update node version ([82772b6](https://github.com/open-inc/node-parse-server-schema/commit/82772b66b437227eea46108e2ed784e0884cb521))
+
 ## [4.1.4](https://github.com/open-inc/node-parse-server-schema/compare/v4.1.3...v4.1.4) (2026-09-28)
 
 
