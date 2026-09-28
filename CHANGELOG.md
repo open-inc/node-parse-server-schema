@@ -1,3 +1,10 @@
+## [4.1.4](https://github.com/open-inc/node-parse-server-schema/compare/v4.1.3...v4.1.4) (2026-09-28)
+
+
+### Bug Fixes
+
+* Update workflow for OIDC ([b9605cf](https://github.com/open-inc/node-parse-server-schema/commit/b9605cf700ae2bacc509909e16d2204d15613c27))
+
 ## [4.1.3](https://github.com/open-inc/node-parse-server-schema/compare/v4.1.2...v4.1.3) (2026-09-28)
 
 
