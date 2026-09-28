@@ -1,3 +1,10 @@
+## [4.1.3](https://github.com/open-inc/node-parse-server-schema/compare/v4.1.2...v4.1.3) (2026-09-28)
+
+
+### Bug Fixes
+
+* Add more logging ([44f39c8](https://github.com/open-inc/node-parse-server-schema/commit/44f39c8de31abf58c92ac5653d603e04c35a2747))
+
 ## [4.1.2](https://github.com/open-inc/node-parse-server-schema/compare/v4.1.1...v4.1.2) (2026-09-14)
 
 
