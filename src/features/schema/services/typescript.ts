@@ -117,10 +117,15 @@ export async function typescript(
     ? path.resolve(typescriptPath)
     : path.resolve(".", "schema", "typescript");
 
+  // The CLI defaults --include/--ignore to "" when omitted, so they are not
+  // always arrays here.
+  const list = (value: unknown) =>
+    (Array.isArray(value) ? value.join(", ") : "") || "none";
+
   console.log(
     `📊 Generating ${schema.length} of ${fullSchema.length} remote classes ` +
-      `(prefix: ${options.prefix || "none"}, include: ${options.include?.join(", ") || "none"}, ` +
-      `ignore: ${options.ignore?.join(", ") || "none"})`
+      `(prefix: ${options.prefix || "none"}, include: ${list(options.include)}, ` +
+      `ignore: ${list(options.ignore)})`
   );
 
   await mkdirp(tsPath);
