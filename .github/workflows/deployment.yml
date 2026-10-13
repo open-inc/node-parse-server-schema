@@ -25,18 +25,17 @@ jobs:
       id-token: write # Required for OIDC (npm trusted publishing)
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           persist-credentials: false
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
-          # npm trusted publishing (OIDC) needs npm >= 11.5.1; Node 22 still ships npm 10.
           node-version: 24
           registry-url: "https://registry.npmjs.org/"
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -46,14 +45,14 @@ jobs:
 
       - name: Semantic Release 🚀
         id: semantic
-        uses: cycjimmy/semantic-release-action@v6
+        uses: cycjimmy/semantic-release-action@v8
         with:
           semantic_version: 25
           branches: master
           extra_plugins: |
-            @semantic-release/changelog@^6
+            @semantic-release/changelog@^7
             @semantic-release/commit-analyzer@^13
-            @semantic-release/git@^10
+            @semantic-release/git@^11
             @semantic-release/github@^12
             @semantic-release/npm@^13
             @semantic-release/release-notes-generator@^14
