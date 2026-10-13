@@ -1,3 +1,10 @@
+## [4.1.6](https://github.com/open-inc/node-parse-server-schema/compare/v4.1.5...v4.1.6) (2026-10-13)
+
+
+### Bug Fixes
+
+* Handle missing --include/--ignore in typescript log ([27e17d2](https://github.com/open-inc/node-parse-server-schema/commit/27e17d225e1ccfa7ad644321abea10c247fc11e8))
+
 ## [4.1.5](https://github.com/open-inc/node-parse-server-schema/compare/v4.1.4...v4.1.5) (2026-09-28)
 
 
