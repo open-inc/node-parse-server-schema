@@ -1,3 +1,10 @@
+## [4.1.7](https://github.com/open-inc/node-parse-server-schema/compare/v4.1.6...v4.1.7) (2026-10-13)
+
+
+### Bug Fixes
+
+* Stop crashing on missing --ignore/--include in log output ([ccbb26c](https://github.com/open-inc/node-parse-server-schema/commit/ccbb26cd2b5fed9a35b1dfa09a10942c202ebbcd))
+
 ## [4.1.6](https://github.com/open-inc/node-parse-server-schema/compare/v4.1.5...v4.1.6) (2026-10-13)
 
 
