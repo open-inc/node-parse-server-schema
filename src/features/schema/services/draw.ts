@@ -3,7 +3,7 @@ import Handlebars from "handlebars";
 import { mkdirp } from "mkdirp";
 import path from "path";
 import { fileURLToPath } from "url";
-import { LOG_PREFIX } from "../../../helper.js";
+import { formatList, LOG_PREFIX } from "../../../helper.js";
 import { getLocalSchema, type SchemaInterface } from "../index.js";
 import type { DrawOptions, DrawRenderer } from "../types/DrawTypes.js";
 
@@ -27,7 +27,7 @@ export async function draw(inputPath: string, options: DrawOptions = {}) {
 
   console.log(
     `${LOG_PREFIX} 🖼️ Drawing schema from ${resolvedInput} ` +
-      `(prefix: ${options.prefix || "none"}, ignore: ${options.ignore?.join(", ") || "none"})`
+      `(prefix: ${options.prefix || "none"}, ignore: ${formatList(options.ignore)})`
   );
 
   let schema = await loadSchema(resolvedInput);

@@ -1,7 +1,7 @@
 import fs from "fs";
 import { mkdirp } from "mkdirp";
 import path from "path";
-import { step } from "../../../helper.js";
+import { formatList, step } from "../../../helper.js";
 import { Config } from "../../config/index.js";
 import { TypescriptConversion } from "../classes/TypescriptConversion.js";
 import {
@@ -117,15 +117,10 @@ export async function typescript(
     ? path.resolve(typescriptPath)
     : path.resolve(".", "schema", "typescript");
 
-  // The CLI defaults --include/--ignore to "" when omitted, so they are not
-  // always arrays here.
-  const list = (value: unknown) =>
-    (Array.isArray(value) ? value.join(", ") : "") || "none";
-
   console.log(
     `📊 Generating ${schema.length} of ${fullSchema.length} remote classes ` +
-      `(prefix: ${options.prefix || "none"}, include: ${list(options.include)}, ` +
-      `ignore: ${list(options.ignore)})`
+      `(prefix: ${options.prefix || "none"}, include: ${formatList(options.include)}, ` +
+      `ignore: ${formatList(options.ignore)})`
   );
 
   await mkdirp(tsPath);

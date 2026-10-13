@@ -58,6 +58,14 @@ export function deepClone(obj: any, seen = new WeakMap()) {
 export const LOG_PREFIX = "[@openinc/parse-server-schema]";
 
 /**
+ * Formats a list option like `ignore` for log output. Like the filters, it
+ * only accepts arrays: a caller passing `""` must not crash the log line.
+ */
+export function formatList(value: unknown) {
+  return (Array.isArray(value) ? value.join(", ") : "") || "none";
+}
+
+/**
  * Runs a single step and rethrows a failure with a description of that step.
  * A bare "Bad status code '400'" does not say which class broke the run.
  */

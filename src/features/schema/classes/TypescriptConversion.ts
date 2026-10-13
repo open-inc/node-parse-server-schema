@@ -62,12 +62,6 @@ export class TypescriptConversion {
       )}`,
     );
     this.prefix = options.prefix || "";
-    this.ignoreFields = options.ignore || [
-      "id",
-      "objectId",
-      "createdAt",
-      "updatedAt",
-    ];
     this.sdk = options.sdk ?? true;
     this.importParseStatement = options.importParseStatement ?? "";
     this.isEsm = options.isEsm ?? false;

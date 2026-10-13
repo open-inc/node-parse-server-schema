@@ -1,7 +1,7 @@
 import fs from "fs";
 import { mkdirp } from "mkdirp";
 import path from "path";
-import { LOG_PREFIX, step } from "../../../helper.js";
+import { formatList, LOG_PREFIX, step } from "../../../helper.js";
 import { Config } from "../../config/index.js";
 import { getRemoteSchema, type DownType } from "../index.js";
 
@@ -19,7 +19,7 @@ export async function down(schemaPath: string, options: DownType = {}) {
 
   console.log(
     `${LOG_PREFIX} ⬇️ Downloading schema from ${serverURL} ` +
-      `(prefix: ${prefix || "none"}, ignore: ${options.ignore?.join(", ") || "none"})`
+      `(prefix: ${prefix || "none"}, ignore: ${formatList(options.ignore)})`
   );
 
   let schema = await step(`fetch remote schema from ${serverURL}`, () =>

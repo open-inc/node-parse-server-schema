@@ -45,7 +45,7 @@ async function main() {
       "Only classes with the given prefix will be pulled",
       ""
     )
-    .option("--ignore <ignore...>", "Class(es) to ignore", "")
+    .option("--ignore <ignore...>", "Class(es) to ignore")
     .description("Fetch the schema from Parse Server")
     .action(async (schemaPath: string, options: CLI_DownType | undefined) => {
       loadConfig(program.opts().configPath, {
@@ -62,7 +62,7 @@ async function main() {
       "Only classes with the given prefix will be pushed or removed",
       ""
     )
-    .option("--ignore <ignore...>", "Class(es) to ignore", "")
+    .option("--ignore <ignore...>", "Class(es) to ignore")
     .option("--safe", "This will prevent destructive operations", "")
     .option("--deleteNonEmptyClass", "Delete non-empty classes", false)
     .description("Upload the local schema to Parse Server")
@@ -99,11 +99,10 @@ async function main() {
     .command("typescript <typescriptPath>")
     .description("Transform the local schema to Typescript definitions")
     .option("--prefix <prefix>", "Prefix will be stripped from class names", "")
-    .option("--ignore <ignore...>", "Class(es) to ignore", "")
+    .option("--ignore <ignore...>", "Class(es) to ignore")
     .option(
       "--include <include...>",
-      "Class(es) to include (overrides --ignore)",
-      ""
+      "Class(es) to include (overrides --ignore)"
     )
     .option("--no-class", "Don't create and register custom Parse.Object")
     .option("--no-sdk", "Don't use Parse JS SDK, just TS without dependencies")
