@@ -1,3 +1,10 @@
+## [4.1.8](https://github.com/open-inc/node-parse-server-schema/compare/v4.1.7...v4.1.8) (2026-10-16)
+
+
+### Bug Fixes
+
+* update handlebars dependency to version 4.7.10 ([812e0dd](https://github.com/open-inc/node-parse-server-schema/commit/812e0dd323f23b3d4b5d941d0c3138199ea208b9))
+
 ## [4.1.7](https://github.com/open-inc/node-parse-server-schema/compare/v4.1.6...v4.1.7) (2026-10-13)
 
 
